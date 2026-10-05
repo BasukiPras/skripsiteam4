@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<script src="../mock-api.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gehenk Bike — Mekanik</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EEF1F7;
+    --panel:#FFFFFF;
+    --panel-light:#E7EBF3;
+    --tint:#E3E8F4;
+    --ink:#131B2E;
+    --muted:#68708A;
+    --navy:#1E3A70;
+    --navy-deep:#0E1F3F;
+    --sky:#2F6FA6;
+    --rust:#C24A20;
+    --line:#DDE3EF;
+  }
+  body{background:var(--bg); color:var(--ink); font-family:'Inter', sans-serif;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  .display, h1, h2, h3, .navbar-brand, .brand-name{font-family:'Oswald', sans-serif; text-transform:uppercase; letter-spacing:.02em;}
+
+  /* sidebar */
+  .sidebar{width:240px; min-height:100vh; background:var(--navy-deep); border-right:1px solid rgba(255,255,255,.06); flex-shrink:0;}
+  .brand-mark{width:34px; height:34px; border-radius:50%; border:3px solid var(--sky); display:flex; align-items:center; justify-content:center; position:relative;}
+  .brand-mark::after{content:''; width:4px; height:4px; background:var(--sky); border-radius:50%;}
+  .brand-name{font-size:16px; font-weight:600; line-height:1.1; color:#fff;}
+  .brand-sub{font-size:10px; color:rgba(255,255,255,.5); letter-spacing:.12em; text-transform:uppercase;}
+  .nav-label{font-size:10.5px; color:rgba(255,255,255,.35); text-transform:uppercase; letter-spacing:.14em; margin:16px 0 6px 12px;}
+  .sidebar .nav-link{color:rgba(255,255,255,.72); font-size:13.5px; font-weight:500; border-radius:8px; display:flex; align-items:center; gap:12px; padding:.6rem .75rem;}
+  .sidebar .nav-link i{font-size:1rem; opacity:.8; width:18px; text-align:center;}
+  .sidebar .nav-link:hover{background:rgba(255,255,255,.06); color:#fff;}
+  .sidebar .nav-link.active{background:rgba(255,255,255,.08); color:#fff; box-shadow:inset 3px 0 0 var(--sky);}
+  .sidebar .nav-link.active i{opacity:1;}
+  .sidebar-foot{background:rgba(255,255,255,.06); border:1px dashed rgba(255,255,255,.15); border-radius:10px; padding:.6rem .75rem; color:rgba(255,255,255,.75);}
+  .dot{width:7px; height:7px; border-radius:50%; background:var(--sky); display:inline-block;}
+  .nav-link-logout {
+  color: rgba(255, 140, 120, .85) !important;
+}
+
+.nav-link-logout:hover {
+  background: rgba(194, 74, 32, .18) !important; /* Latar merah muda saat hover */
+  color: #fff !important;
+}
+
+.nav-link-logout i {
+  opacity: 1; /* Ikon panah logout selalu jelas */
+}
+  .tag-shape{position:relative; background:var(--tint); border:1px solid var(--line); border-radius:4px 10px 10px 4px; padding-left:1.9rem !important; box-shadow:0 1px 2px rgba(19,27,46,.06);}
+  .tag-shape::before{content:''; position:absolute; left:12px; top:50%; transform:translateY(-50%); width:8px; height:8px; border-radius:50%; background:var(--bg); border:1px solid var(--line);}
+  .tag-shape::after{content:''; position:absolute; left:-1px; top:50%; transform:translateY(-50%); width:10px; height:20px; background:var(--bg); border-radius:0 10px 10px 0;}
+  .tag-label{font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; font-weight:600;}
+  .tag-value{font-family:'IBM Plex Mono', monospace; font-size:24px; font-weight:600;}
+  .text-navy{color:var(--navy) !important;}
+  .text-sky{color:var(--sky) !important;}
+  .text-rust{color:var(--rust) !important;}
+  .card{border-color:var(--line);}
+
+  .badge-soft-rust{background:rgba(194,74,32,.16); color:var(--rust); font-weight:600;}
+  .badge-soft-sky{background:rgba(47,111,166,.16); color:var(--sky); font-weight:600;}
+  .badge-soft-navy{background:rgba(30,58,112,.14); color:var(--navy); font-weight:600;}
+  .badge-soft-muted{background:var(--panel-light); color:var(--muted); font-weight:600;}
+
+  .queue-filter{border:1px solid var(--line); border-radius:8px; color:var(--muted); font-weight:600; font-size:13px; padding:.5rem 1rem; background:var(--panel); cursor:pointer;}
+  .queue-filter.active{background:var(--ink); color:var(--tint); border-color:var(--ink);}
+
+  .mech-card{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:1.1rem; height:100%; display:flex; flex-direction:column; gap:.75rem;}
+  .mech-avatar-lg{
+    width:52px; height:52px; border-radius:50%; background:var(--panel-light); border:2px solid var(--sky);
+    display:flex; align-items:center; justify-content:center; font-family:'Oswald',sans-serif; font-size:18px; font-weight:600; flex-shrink:0;
+  }
+  .mech-card.status-cuti .mech-avatar-lg{border-color:var(--line); opacity:.6;}
+  .mech-card.status-cuti{opacity:.75;}
+  .mech-name{font-weight:600; font-size:15px;}
+  .mech-role{font-size:11.5px; color:var(--muted);}
+
+  .mech-stats{display:flex; gap:1.25rem; border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:.7rem 0;}
+  .mech-stat-value{font-family:'IBM Plex Mono', monospace; font-size:16px; font-weight:600;}
+  .mech-stat-label{font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em;}
+
+  .mech-current-job{background:var(--tint); border:1px solid var(--line); border-radius:8px; padding:.6rem .75rem; font-size:12px;}
+
+  .contact-btn{
+    flex:1; text-align:center; border:1px solid var(--line); border-radius:7px; padding:.4rem; font-size:12px;
+    font-weight:600; color:var(--ink); background:var(--panel); text-decoration:none;
+  }
+  .contact-btn:hover{background:var(--tint); border-color:var(--navy); color:var(--ink);}
+  .status-select{flex:1; font-size:12px; border:1px solid var(--line); border-radius:7px; padding:.35rem .4rem; background:var(--panel); color:var(--ink);}
+  .status-select:focus{box-shadow:none; border-color:var(--navy);}
+
+  .form-control:focus, .form-select:focus{box-shadow:none; border-color:var(--navy);}
+  .btn-newmech{background:var(--navy); border:none; color:#fff; font-weight:600; border-radius:8px; padding:.55rem 1.1rem; white-space:nowrap;}
+  .btn-newmech:hover{background:#16294D; color:#fff;}
+  .btn-newmech:disabled{opacity:.6; cursor:not-allowed;}
+  .modal-content{background:var(--panel); border:1px solid var(--line); border-radius:12px;}
+  .modal-header, .modal-footer{border-color:var(--line);}
+  .empty-state{padding:3rem 1rem; text-align:center; color:var(--muted); font-size:13px;}
+  .form-text-error{color:var(--rust); font-size:12px;}
+  .riwayat-item{display:flex; gap:.75rem; padding:.7rem 0; border-bottom:1px solid var(--line);}
+  .riwayat-item:last-child{border-bottom:none;}
+  .riwayat-icon{width:34px; height:34px; border-radius:8px; background:var(--panel-light); display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--navy); flex-shrink:0;}
+</style>
+</head>
+<body>
+
+<div class="d-flex">
+
+  <!-- Sidebar -->
+  <aside class="sidebar d-none d-lg-flex flex-column p-3">
+    <div class="d-flex align-items-center gap-2 mb-4 px-1">
+      <img src="../storage/Bike_Only.png" alt="Logo" width="75" height="50" class="d-inline-block align-text-top">
+      <div>
+        <div class="brand-name">Gehenk Bike</div>
+        <div class="brand-sub">by Cecep</div>
+      </div>
+    </div>
+
+    <div class="nav-label">Utama</div>
+    <ul class="nav nav-pills flex-column mb-2">
+      <li class="nav-item"><a class="nav-link" href="bengkel-dashboard.html"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a></li>
+      <li class="nav-item"><a class="nav-link" href="pelayanan.html"><i class="bi bi-cart-check-fill"></i> Pelayanan</a></li>
+      <li class="nav-item"><a class="nav-link" href="antrian-servis.html"><i class="bi bi-clock-history"></i> Antrian Servis</a></li>
+      <li class="nav-item"><a class="nav-link" href="pelanggan.html"><i class="bi bi-people-fill"></i> Pelanggan</a></li>
+      <li class="nav-item"><a class="nav-link" href="sparepart.html"><i class="bi bi-box-seam-fill"></i> Sparepart</a></li>
+      <li class="nav-item"><a class="nav-link" href="sepeda.html"><i class="bi bi-bicycle"></i> Sepeda</a></li>
+      <li class="nav-item"><a class="nav-link active" href="mekanik.html"><i class="bi bi-tools"></i> Mekanik</a></li>
+    </ul>
+
+    <div class="nav-label">Lainnya</div>
+    <ul class="nav nav-pills flex-column">
+      <li class="nav-item"><a class="nav-link" href="laporan.html"><i class="bi bi-bar-chart-line-fill"></i> Laporan</a></li>
+      <li class="nav-item"><a class="nav-link" href="pengaturan.html"><i class="bi bi-gear-fill"></i> Pengaturan</a></li>
+      <li class="nav-item"><a class="nav-link nav-link-logout" href="#" id="btnLogoutSidebar"><i class="bi bi-box-arrow-right"></i> Keluar</a></li>
+    </ul>
+
+    
+  </aside>
+
+  <!-- Main -->
+  <div class="flex-grow-1">
+
+    <nav class="navbar d-lg-none border-bottom" style="background:var(--navy-deep); border-color:var(--navy-deep) !important;">
+      <div class="container-fluid">
+        <button class="btn btn-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileNav" style="border:1px solid rgba(255,255,255,.2); color:#fff;">
+          <i class="bi bi-list fs-5"></i>
+        </button>
+        <span class="brand-name fs-6 mb-0" style="color:#fff;">Gehenk Bike</span>
+        <span style="width:38px;"></span>
+      </div>
+    </nav>
+    <div class="offcanvas offcanvas-start" id="mobileNav" style="background:var(--navy-deep); width:240px;">
+      <div class="offcanvas-body p-3">
+        <div class="nav-label">Utama</div>
+        <ul class="nav nav-pills flex-column mb-2">
+          <li class="nav-item"><a class="nav-link" href="bengkel-dashboard.html"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="pelayanan.html"><i class="bi bi-cart-check-fill"></i> Pelayanan</a></li>
+          <li class="nav-item"><a class="nav-link" href="antrian-servis.html"><i class="bi bi-clock-history"></i> Antrian Servis</a></li>
+          <li class="nav-item"><a class="nav-link" href="pelanggan.html"><i class="bi bi-people-fill"></i> Pelanggan</a></li>
+          <li class="nav-item"><a class="nav-link" href="sparepart.html"><i class="bi bi-box-seam-fill"></i> Sparepart</a></li>
+          <li class="nav-item"><a class="nav-link" href="sepeda.html"><i class="bi bi-bicycle"></i> Sepeda</a></li>
+          <li class="nav-item"><a class="nav-link active" href="mekanik.html"><i class="bi bi-tools"></i> Mekanik</a></li>
+        </ul>
+        <div class="nav-label">Lainnya</div>
+        <ul class="nav nav-pills flex-column">
+          <li class="nav-item"><a class="nav-link" href="laporan.html"><i class="bi bi-bar-chart-line-fill"></i> Laporan</a></li>
+          <li class="nav-item"><a class="nav-link" href="pengaturan.html"><i class="bi bi-gear-fill"></i> Pengaturan</a></li>
+          <li class="nav-item"><a class="nav-link nav-link-logout" href="#" id="btnLogoutMobile"><i class="bi bi-box-arrow-right"></i> Keluar</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <main class="p-3 p-lg-5">
+
+      <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+        <div>
+          <div class="text-navy fw-semibold small text-uppercase" style="letter-spacing:.16em; font-size:11px;">Tim Bengkel</div>
+          <h1 class="fs-3 fw-semibold mb-0 mt-1">Mekanik</h1>
+          <div class="text-muted small mt-1">Kelola data dan beban kerja mekanik</div>
+        </div>
+        <button class="btn-newmech" data-bs-toggle="modal" data-bs-target="#modalTambahMekanik">
+          <i class="bi bi-person-plus-fill me-1"></i>Tambah Mekanik
+        </button>
+      </div>
+
+      <!-- Stat tags -->
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3 mb-4">
+        <div class="col">
+          <div class="tag-shape p-3 h-100">
+            <div class="tag-label">Total Mekanik</div>
+            <div class="tag-value" id="statTotal">–</div>
+            <div class="small text-muted">Terdaftar aktif bekerja</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="tag-shape p-3 h-100">
+            <div class="tag-label">Sedang Bertugas</div>
+            <div class="tag-value text-navy" id="statSibuk">–</div>
+            <div class="small text-muted">Menangani tiket servis</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="tag-shape p-3 h-100">
+            <div class="tag-label">Sedang Luang</div>
+            <div class="tag-value text-sky" id="statLuang">–</div>
+            <div class="small text-muted">Siap terima tiket baru</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="tag-shape p-3 h-100">
+            <div class="tag-label">Total Servis Bulan Ini</div>
+            <div class="tag-value" id="statServisBulanIni">–</div>
+            <div class="small text-muted">Semua mekanik digabung</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter & search -->
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div class="d-flex flex-wrap gap-2" id="statusFilters">
+          <button class="queue-filter active" data-status="semua">Semua</button>
+          <button class="queue-filter" data-status="sibuk">Sibuk</button>
+          <button class="queue-filter" data-status="luang">Luang</button>
+          <button class="queue-filter" data-status="cuti">Cuti</button>
+        </div>
+        <div class="input-group" style="max-width:260px; background:var(--panel); border:1px solid var(--line); border-radius:8px;">
+          <span class="input-group-text bg-transparent border-0"><i class="bi bi-search" style="color:var(--muted);"></i></span>
+          <input type="text" class="form-control border-0 bg-transparent" id="mechSearch" placeholder="Cari nama mekanik..." style="box-shadow:none; color:var(--ink);">
+        </div>
+      </div>
+
+      <!-- Mechanic cards -->
+      <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3" id="mechGrid">
+        <div class="col-12 empty-state">Memuat data mekanik…</div>
+      </div>
+
+      <div class="text-center text-muted small py-4 d-none" id="noMechResult">
+        <i class="bi bi-person-x fs-4 d-block mb-2"></i>Tidak ada mekanik yang cocok.
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Modal Tambah Mekanik -->
+<div class="modal fade" id="modalTambahMekanik" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fs-6" style="font-family:'Oswald',sans-serif; text-transform:uppercase;">Tambah Mekanik Baru</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label small fw-medium">Nama Mekanik</label>
+          <input type="text" class="form-control" id="newMechName" placeholder="cth. Fajar Ramadhan">
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-medium">Email</label>
+          <input type="email" class="form-control" id="newMechEmail" placeholder="fajar@gehenkbike.com">
+        </div>
+        <div class="mb-0">
+          <label class="form-label small fw-medium">Password Awal</label>
+          <input type="text" class="form-control" id="newMechPassword" placeholder="Minimal 6 karakter">
+        </div>
+        <div class="form-text-error d-none mt-2" id="newMechError"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm" data-bs-dismiss="modal" style="border:1px solid var(--line); background:var(--panel);">Batal</button>
+        <button type="button" class="btn btn-sm btn-newmech" id="btnSaveMech">Simpan Mekanik</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Riwayat Servis Mekanik -->
+<div class="modal fade" id="modalRiwayat" tabindex="-1">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fs-6" style="font-family:'Oswald',sans-serif; text-transform:uppercase;">Riwayat Servis — <span id="riwayatNama"></span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="riwayatBody"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script>
+  const API_BASE = '';
+
+  /* ---------- Logout ---------- */
+  async function handleLogout(btn){
+    if(!confirm('Yakin ingin keluar dari akun ini?')) return;
+    if(btn){ btn.disabled = true; }
+    try {
+      await fetch('/api/logout', { method: 'POST', headers: { Accept: 'application/json' } });
+    } catch (err) {
+      // tetap arahkan ke login walau logout API gagal, supaya tidak terjebak di halaman admin
+    } finally {
+      window.location.href = 'login.html';
+    }
+  }
+  ['btnLogoutSidebar', 'btnLogoutMobile'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.addEventListener('click', (e) => { e.preventDefault(); handleLogout(el); });
+  });
+
+  /* Batasi akses mekanik: hanya boleh Pelayanan & Antrian Servis (buat/kerjakan tiket, pakai sparepart) */
+  (async function guardAksesMekanik(){
+    const HALAMAN_TERLARANG = ['bengkel-dashboard.html','pelanggan.html','sparepart.html','sepeda.html','mekanik.html','laporan.html','pengaturan.html'];
+    try {
+      const res = await fetch('/api/me', { headers: { Accept: 'application/json' } });
+      const { data } = await res.json();
+      if (!data || data.job !== 'mekanik') return;
+
+      const halamanIni = location.pathname.split('/').pop();
+      if (HALAMAN_TERLARANG.includes(halamanIni)) { location.href = 'pelayanan.html'; return; }
+
+      document.querySelectorAll('.sidebar a.nav-link, .offcanvas a.nav-link').forEach(a => {
+        if (HALAMAN_TERLARANG.includes(a.getAttribute('href'))) a.closest('li')?.classList.add('d-none');
+      });
+    } catch (err) { /* kalau /api/me gagal, biarkan halaman tampil normal */ }
+  })();
+
+  async function fetchJson(path, options){
+    const res = await fetch(`${API_BASE}${path}`, {
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      ...options,
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const err = new Error(body.message || (body.errors && Object.values(body.errors)[0][0]) || `Gagal memanggil ${path} (${res.status})`);
+      err.body = body;
+      throw err;
+    }
+    return body;
+  }
+
+  function initial(name){
+    if (!name) return '?';
+    return name.trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+  }
+  function isThisMonth(dateStr){
+    if(!dateStr) return false;
+    const d = new Date(dateStr), now = new Date();
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  }
+
+  let mekanikList = [];
+  let ticketsByMekanik = {}; // mekanik_id -> [tiket,...]
+
+  const mechGrid = document.getElementById('mechGrid');
+  const noMechResult = document.getElementById('noMechResult');
+  const statusFilters = document.querySelectorAll('.queue-filter');
+  const mechSearch = document.getElementById('mechSearch');
+  let activeStatus = 'semua';
+
+  const STATUS_BADGE = {
+    sibuk: 'badge-soft-navy', luang: 'badge-soft-sky', cuti: 'badge-soft-muted',
+  };
+  const STATUS_LABEL = { sibuk: 'Sibuk', luang: 'Luang', cuti: 'Cuti' };
+
+  function mechCard(m){
+    const tiket = ticketsByMekanik[m.id] || [];
+    const servisBulanIni = tiket.filter(t => isThisMonth(t.tanggal_masuk)).length;
+    const tugasAktif = tiket.find(t => t.status === 'dikerjakan');
+    const status = m.status_kerja || 'luang';
+
+    const currentJob = tugasAktif
+      ? `<div class="mech-current-job"><i class="bi bi-wrench-adjustable me-1 text-navy"></i>Mengerjakan <strong>#${tugasAktif.nomor_tiket}</strong> — ${tugasAktif.jenis_sepeda}</div>`
+      : status === 'cuti'
+        ? `<div class="mech-current-job"><i class="bi bi-calendar-x me-1"></i>Sedang cuti</div>`
+        : `<div class="mech-current-job"><i class="bi bi-check-circle me-1 text-sky"></i>Siap menerima tiket baru</div>`;
+
+    const totalDitangani = tiket.length;
+
+    return `
+      <div class="col mech-item" data-status="${status}" data-search="${(m.name + ' ' + m.email).toLowerCase()}">
+        <div class="mech-card status-${status}">
+          <div class="d-flex align-items-center gap-3">
+            <div class="mech-avatar-lg">${initial(m.name)}</div>
+            <div class="flex-grow-1">
+              <div class="mech-name">${m.name}</div>
+              <div class="mech-role">${m.email}</div>
+            </div>
+            <span class="badge rounded-pill ${STATUS_BADGE[status]}">${STATUS_LABEL[status]}</span>
+          </div>
+          ${currentJob}
+          <div class="mech-stats">
+            <div><div class="mech-stat-value">${servisBulanIni}</div><div class="mech-stat-label">Servis / bln</div></div>
+            <div><div class="mech-stat-value">${totalDitangani}</div><div class="mech-stat-label">Total Ditangani</div></div>
+          </div>
+          <div class="d-flex gap-2">
+            <a href="mailto:${m.email}" class="contact-btn"><i class="bi bi-envelope me-1"></i>Email</a>
+            <button type="button" class="contact-btn" data-riwayat="${m.id}" data-nama="${m.name}"><i class="bi bi-clock-history me-1"></i>Riwayat</button>
+            <select class="status-select" data-id="${m.id}">
+              <option value="luang" ${status === 'luang' ? 'selected' : ''}>Set: Luang</option>
+              <option value="sibuk" ${status === 'sibuk' ? 'selected' : ''}>Set: Sibuk</option>
+              <option value="cuti" ${status === 'cuti' ? 'selected' : ''}>Set: Cuti</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function applyFilters(){
+    const query = mechSearch.value.trim().toLowerCase();
+    let visible = 0;
+    mechGrid.querySelectorAll('.mech-item').forEach(item => {
+      const matchesStatus = activeStatus === 'semua' || item.dataset.status === activeStatus;
+      const matchesSearch = !query || item.dataset.search.includes(query);
+      const show = matchesStatus && matchesSearch;
+      item.classList.toggle('d-none', !show);
+      if(show) visible++;
+    });
+    noMechResult.classList.toggle('d-none', visible > 0 || mekanikList.length === 0);
+  }
+
+  function renderGrid(){
+    if(!mekanikList.length){
+      mechGrid.innerHTML = '<div class="col-12 empty-state">Belum ada mekanik terdaftar. Klik "Tambah Mekanik" untuk mulai.</div>';
+      updateStats();
+      return;
+    }
+    mechGrid.innerHTML = mekanikList.map(mechCard).join('');
+    applyFilters();
+    updateStats();
+  }
+
+  function updateStats(){
+    document.getElementById('statTotal').textContent = mekanikList.length;
+    document.getElementById('statSibuk').textContent = mekanikList.filter(m => m.status_kerja === 'sibuk').length;
+    document.getElementById('statLuang').textContent = mekanikList.filter(m => m.status_kerja === 'luang').length;
+    const totalServisBulanIni = mekanikList.reduce((sum, m) => {
+      const tiket = ticketsByMekanik[m.id] || [];
+      return sum + tiket.filter(t => isThisMonth(t.tanggal_masuk)).length;
+    }, 0);
+    document.getElementById('statServisBulanIni').textContent = totalServisBulanIni;
+  }
+
+  async function loadData(){
+    const [mekRes, tikRes] = await Promise.allSettled([
+      fetchJson('/api/users?job=mekanik'),
+      fetchJson('/api/tiket-servis'),
+    ]);
+
+    mekanikList = mekRes.status === 'fulfilled' ? (mekRes.value.data || []) : [];
+    const tiket = tikRes.status === 'fulfilled' ? (tikRes.value.data || []) : [];
+
+    ticketsByMekanik = {};
+    tiket.forEach(t => {
+      if(!t.mekanik_id) return;
+      (ticketsByMekanik[t.mekanik_id] ||= []).push(t);
+    });
+
+    if(mekRes.status !== 'fulfilled'){
+      mechGrid.innerHTML = '<div class="col-12 empty-state">Gagal memuat data mekanik.</div>';
+      return;
+    }
+    renderGrid();
+  }
+
+  const TIKET_STATUS_LABEL = { menunggu:'Menunggu', dikerjakan:'Dikerjakan', selesai:'Selesai', sudah_diambil:'Sudah Diambil' };
+
+  /* ---------- Modal Riwayat Servis ---------- */
+  const modalRiwayat = new bootstrap.Modal(document.getElementById('modalRiwayat'));
+  const riwayatBody = document.getElementById('riwayatBody');
+
+  function openRiwayat(mekanikId, nama){
+    document.getElementById('riwayatNama').textContent = nama;
+    const tiket = [...(ticketsByMekanik[mekanikId] || [])].sort((a, b) => new Date(b.tanggal_masuk) - new Date(a.tanggal_masuk));
+
+    riwayatBody.innerHTML = tiket.length ? tiket.map(t => `
+      <div class="riwayat-item">
+        <div class="riwayat-icon"><i class="bi bi-tools"></i></div>
+        <div class="flex-grow-1">
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="fw-semibold" style="font-size:13px;">#${t.nomor_tiket} — ${t.jenis_sepeda}</span>
+            <span class="badge rounded-pill badge-soft-navy" style="font-size:10px;">${TIKET_STATUS_LABEL[t.status] || t.status}</span>
+          </div>
+          <div class="small text-muted">${t.keluhan || '—'}</div>
+          <div class="small text-muted">${new Date(t.tanggal_masuk).toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric' })}</div>
+        </div>
+        <div class="mono fw-semibold flex-shrink-0">Rp ${Number(t.total_biaya || 0).toLocaleString('id-ID')}</div>
+      </div>
+    `).join('') : '<div class="empty-state">Belum ada servis yang dikerjakan.</div>';
+
+    modalRiwayat.show();
+  }
+
+  mechGrid.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-riwayat]');
+    if(!btn) return;
+    openRiwayat(parseInt(btn.dataset.riwayat, 10), btn.dataset.nama);
+  });
+
+  mechGrid.addEventListener('change', async (e) => {
+    const select = e.target.closest('select.status-select');
+    if(!select) return;
+    const id = parseInt(select.dataset.id, 10);
+    const status_kerja = select.value;
+
+    select.disabled = true;
+    try {
+      await fetchJson(`/api/users/${id}/status-kerja`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status_kerja }),
+      });
+      const m = mekanikList.find(x => x.id === id);
+      if(m) m.status_kerja = status_kerja;
+      renderGrid();
+    } catch (err) {
+      alert(err.message || 'Gagal mengubah status mekanik.');
+      select.disabled = false;
+    }
+  });
+
+  statusFilters.forEach(btn => {
+    btn.addEventListener('click', () => {
+      statusFilters.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeStatus = btn.dataset.status;
+      applyFilters();
+    });
+  });
+  mechSearch.addEventListener('input', applyFilters);
+
+  const newMechError = document.getElementById('newMechError');
+  const btnSaveMech = document.getElementById('btnSaveMech');
+
+  btnSaveMech.addEventListener('click', async () => {
+    const name = document.getElementById('newMechName').value.trim();
+    const email = document.getElementById('newMechEmail').value.trim();
+    const password = document.getElementById('newMechPassword').value;
+
+    newMechError.classList.add('d-none');
+    if(!name || !email || password.length < 6){
+      newMechError.textContent = 'Nama, email, dan password (min. 6 karakter) wajib diisi.';
+      newMechError.classList.remove('d-none');
+      return;
+    }
+
+    btnSaveMech.disabled = true;
+    btnSaveMech.textContent = 'Menyimpan…';
+
+    try {
+      await fetchJson('/api/users', {
+        method: 'POST',
+        body: JSON.stringify({ name, email, password, job: 'mekanik' }),
+      });
+
+      document.getElementById('newMechName').value = '';
+      document.getElementById('newMechEmail').value = '';
+      document.getElementById('newMechPassword').value = '';
+
+      await loadData();
+      bootstrap.Modal.getInstance(document.getElementById('modalTambahMekanik')).hide();
+    } catch (err) {
+      newMechError.textContent = err.message || 'Gagal menyimpan mekanik.';
+      newMechError.classList.remove('d-none');
+    } finally {
+      btnSaveMech.disabled = false;
+      btnSaveMech.textContent = 'Simpan Mekanik';
+    }
+  });
+
+  loadData();
+</script>
+</body>
+</html>

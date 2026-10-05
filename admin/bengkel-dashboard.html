@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<script src="../mock-api.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gehenk Bike — Dashboard</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EEF1F7;
+    --panel:#FFFFFF;
+    --panel-light:#E7EBF3;
+    --tint:#E3E8F4;
+    --ink:#131B2E;
+    --muted:#68708A;
+    --navy:#1E3A70;
+    --navy-deep:#0E1F3F;
+    --sky:#2F6FA6;
+    --rust:#C24A20;
+    --line:#DDE3EF;
+  }
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+  }
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  .display, h1, h2, .navbar-brand, .brand-name{font-family:'Oswald', sans-serif; text-transform:uppercase; letter-spacing:.02em;}
+
+  /* sidebar */
+  .sidebar{
+    width:240px; min-height:100vh; background:var(--navy-deep);
+    border-right:1px solid rgba(255,255,255,.06); flex-shrink:0;
+  }
+  .brand-mark{
+    width:34px; height:34px; border-radius:50%; border:3px solid var(--sky);
+    display:flex; align-items:center; justify-content:center; position:relative;
+  }
+  .brand-mark::after{content:''; width:4px; height:4px; background:var(--sky); border-radius:50%;}
+  .brand-name{font-size:16px; font-weight:600; line-height:1.1; color:#fff;}
+  .brand-sub{font-size:10px; color:rgba(255,255,255,.5); letter-spacing:.12em; text-transform:uppercase;}
+  .nav-label{font-size:10.5px; color:rgba(255,255,255,.35); text-transform:uppercase; letter-spacing:.14em; margin:16px 0 6px 12px;}
+
+  .sidebar .nav-link{
+    color:rgba(255,255,255,.72); font-size:13.5px; font-weight:500; border-radius:8px;
+    display:flex; align-items:center; gap:12px; padding:.6rem .75rem;
+  }
+  .sidebar .nav-link i{font-size:1rem; opacity:.8; width:18px; text-align:center;}
+  .sidebar .nav-link:hover{background:rgba(255,255,255,.06); color:#fff;}
+  .sidebar .nav-link.active{background:rgba(255,255,255,.08); color:#fff; box-shadow:inset 3px 0 0 var(--sky);}
+  .sidebar .nav-link.active i{opacity:1;}
+  .nav-link-logout {
+  color: rgba(255, 140, 120, .85) !important;
+}
+
+.nav-link-logout:hover {
+  background: rgba(194, 74, 32, .18) !important; /* Latar merah muda saat hover */
+  color: #fff !important;
+}
+
+.nav-link-logout i {
+  opacity: 1; /* Ikon panah logout selalu jelas */
+}
+  .sidebar-foot{background:rgba(255,255,255,.06); border:1px dashed rgba(255,255,255,.15); border-radius:10px; padding:.6rem .75rem; color:rgba(255,255,255,.75);}
+  .dot{width:7px; height:7px; border-radius:50%; background:var(--sky); display:inline-block;}
+
+  /* signature: hanging paper tag shape, reused for stat cards and tickets */
+  .tag-shape{
+    position:relative; background:var(--tint); border:1px solid var(--line);
+    border-radius:4px 10px 10px 4px; padding-left:1.9rem !important;
+    box-shadow:0 1px 2px rgba(19,27,46,.06);
+  }
+  .tag-shape::before{
+    content:''; position:absolute; left:12px; top:50%; transform:translateY(-50%);
+    width:8px; height:8px; border-radius:50%; background:var(--bg); border:1px solid var(--line);
+  }
+  .tag-shape::after{
+    content:''; position:absolute; left:-1px; top:50%; transform:translateY(-50%);
+    width:10px; height:20px; background:var(--bg); border-radius:0 10px 10px 0;
+  }
+  .ticket-tag{padding-left:1.6rem !important;}
+  .ticket-tag::before{left:9px; width:6px; height:6px;}
+
+  .tag-label{font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; font-weight:600;}
+  .tag-value{font-family:'IBM Plex Mono', monospace; font-size:24px; font-weight:600;}
+  .text-navy{color:var(--navy) !important;}
+  .text-sky{color:var(--sky) !important;}
+  .text-rust{color:var(--rust) !important;}
+  .bg-tint{background:var(--tint) !important;}
+
+  .badge-soft-rust{background:rgba(194,74,32,.16); color:var(--rust); font-weight:600;}
+  .badge-soft-sky{background:rgba(47,111,166,.16); color:var(--sky); font-weight:600;}
+  .badge-soft-navy{background:rgba(30,58,112,.14); color:var(--navy); font-weight:600;}
+
+  .col-board{background:var(--panel); border:1px solid var(--line); border-radius:10px;}
+  .col-board .col-header{border-bottom:2px solid var(--line); font-family:'Oswald',sans-serif; font-size:12.5px; letter-spacing:.06em; font-weight:600; text-transform:uppercase;}
+  .status-strip{height:3px; border-radius:2px;}
+
+  .avatar-sm{
+    width:18px; height:18px; border-radius:50%; background:var(--sky); color:#fff;
+    display:inline-flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; flex-shrink:0;
+  }
+  .avatar-md{
+    width:36px; height:36px; border-radius:50%; background:var(--panel-light); border:2px solid var(--sky);
+    display:flex; align-items:center; justify-content:center; font-family:'Oswald',sans-serif; font-size:13px; font-weight:600; flex-shrink:0;
+  }
+
+  .chart-wrap{display:flex; align-items:flex-end; gap:10px; height:140px;}
+  .bar-col{flex:1; display:flex; flex-direction:column; align-items:center; gap:8px; height:100%; justify-content:flex-end;}
+  .bar{width:100%; max-width:28px; border-radius:4px 4px 2px 2px; background:linear-gradient(180deg, #3E5C93, var(--navy));}
+  .bar.peak{background:linear-gradient(180deg, #4C7FC2, var(--sky));}
+
+  .form-control:focus{box-shadow:none; border-color:var(--navy);}
+  .progress{background-color:var(--panel-light);}
+  .card{border-color:var(--line);}
+  .empty-state{color:var(--muted); font-size:13px; text-align:center; padding:1.5rem .5rem;}
+</style>
+</head>
+<body>
+
+<div class="d-flex">
+
+  <!-- Sidebar (desktop) -->
+  <aside class="sidebar d-none d-lg-flex flex-column p-3">
+    <div class="d-flex align-items-center gap-2 mb-4 px-1">
+      <img src="../storage/Bike_Only.png" alt="Logo" width="75" height="50" class="d-inline-block align-text-top">
+      <div>
+        <div class="brand-name">Gehenk Bike</div>
+        <div class="brand-sub">by Cecep</div>
+      </div>
+    </div>
+
+    <div class="nav-label">Utama</div>
+    <ul class="nav nav-pills flex-column mb-2">
+      <li class="nav-item"><a class="nav-link active" href="bengkel-dashboard.html"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a></li>
+      <li class="nav-item"><a class="nav-link" href="pelayanan.html"><i class="bi bi-cart-check-fill"></i> Pelayanan</a></li>
+      <li class="nav-item"><a class="nav-link" href="antrian-servis.html"><i class="bi bi-clock-history"></i> Antrian Servis</a></li>
+      <li class="nav-item"><a class="nav-link" href="pelanggan.html"><i class="bi bi-people-fill"></i> Pelanggan</a></li>
+      <li class="nav-item"><a class="nav-link" href="sparepart.html"><i class="bi bi-box-seam-fill"></i> Sparepart</a></li>
+      <li class="nav-item"><a class="nav-link" href="sepeda.html"><i class="bi bi-bicycle"></i> Sepeda</a></li>
+      <li class="nav-item"><a class="nav-link" href="mekanik.html"><i class="bi bi-tools"></i> Mekanik</a></li>
+    </ul>
+
+    <div class="nav-label">Lainnya</div>
+    <ul class="nav nav-pills flex-column">
+      <li class="nav-item"><a class="nav-link" href="laporan.html"><i class="bi bi-bar-chart-line-fill"></i> Laporan</a></li>
+      <li class="nav-item"><a class="nav-link" href="pengaturan.html"><i class="bi bi-gear-fill"></i> Pengaturan</a></li>
+      <li class="nav-item"><a class="nav-link nav-link-logout" href="#" id="btnLogoutSidebar"><i class="bi bi-box-arrow-right"></i> Keluar</a></li>
+    </ul>
+
+    
+  </aside>
+
+  <!-- Main -->
+  <div class="flex-grow-1">
+
+    <!-- Mobile top navbar -->
+    <nav class="navbar d-lg-none border-bottom" style="background:var(--navy-deep); border-color:var(--navy-deep) !important;">
+      <div class="container-fluid">
+        <button class="btn btn-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileNav" style="border:1px solid rgba(255,255,255,.2); color:#fff;">
+          <i class="bi bi-list fs-5"></i>
+        </button>
+        <span class="brand-name fs-6 mb-0" style="color:#fff;">Gehenk Bike</span>
+        <span style="width:38px;"></span>
+      </div>
+    </nav>
+    <div class="offcanvas offcanvas-start" id="mobileNav" style="background:var(--navy-deep); width:240px;">
+      <div class="offcanvas-body p-3">
+        <div class="nav-label">Utama</div>
+        <ul class="nav nav-pills flex-column mb-2">
+          <li class="nav-item"><a class="nav-link active" href="bengkel-dashboard.html"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="pelayanan.html"><i class="bi bi-cart-check-fill"></i> Pelayanan</a></li>
+          <li class="nav-item"><a class="nav-link" href="antrian-servis.html"><i class="bi bi-clock-history"></i> Antrian Servis</a></li>
+          <li class="nav-item"><a class="nav-link" href="pelanggan.html"><i class="bi bi-people-fill"></i> Pelanggan</a></li>
+          <li class="nav-item"><a class="nav-link" href="sparepart.html"><i class="bi bi-box-seam-fill"></i> Sparepart</a></li>
+          <li class="nav-item"><a class="nav-link" href="sepeda.html"><i class="bi bi-bicycle"></i> Sepeda</a></li>
+          <li class="nav-item"><a class="nav-link" href="mekanik.html"><i class="bi bi-tools"></i> Mekanik</a></li>
+        </ul>
+        <div class="nav-label">Lainnya</div>
+        <ul class="nav nav-pills flex-column">
+          <li class="nav-item"><a class="nav-link" href="laporan.html"><i class="bi bi-bar-chart-line-fill"></i> Laporan</a></li>
+          <li class="nav-item"><a class="nav-link" href="pengaturan.html"><i class="bi bi-gear-fill"></i> Pengaturan</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <main class="p-3 p-lg-5">
+
+      <!-- Header -->
+      <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+        <div>
+          <div class="text-navy fw-semibold small text-uppercase" style="letter-spacing:.16em; font-size:11px;">Ringkasan Hari Ini</div>
+          <h1 class="fs-3 fw-semibold mb-0 mt-1" id="greetingText">Selamat Datang</h1>
+          <div class="text-muted small mt-1" id="todayDate">—</div>
+        </div>
+        
+      </div>
+
+      <!-- Stat tags -->
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3 mb-4">
+        <div class="col">
+          <div class="tag-shape p-3 h-100">
+            <div class="tag-label">Antrian Hari Ini</div>
+            <div class="tag-value text-navy" id="statAntrian">–</div>
+            <div class="small text-muted" id="statAntrianSub">Memuat…</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="tag-shape p-3 h-100">
+            <div class="tag-label">Pendapatan Hari Ini</div>
+            <div class="tag-value text-sky" id="statPendapatan">–</div>
+            <div class="small text-muted" id="statPendapatanSub">Memuat…</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="tag-shape p-3 h-100">
+            <div class="tag-label">Sparepart Menipis</div>
+            <div class="tag-value text-rust" id="statSparepart">–</div>
+            <div class="small text-muted" id="statSparepartSub">Memuat…</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="tag-shape p-3 h-100">
+            <div class="tag-label">Mekanik Aktif</div>
+            <div class="tag-value" id="statMekanik">–</div>
+            <div class="small text-muted" id="statMekanikSub">Memuat…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Service queue board -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="fs-6 mb-0">Papan Antrian Servis</h2>
+        <a href="antrian-servis.html" class="small text-decoration-none fw-medium text-navy">Lihat semua tiket →</a>
+      </div>
+
+      <div class="row row-cols-1 row-cols-lg-3 g-3 mb-5">
+
+        <!-- Menunggu -->
+        <div class="col">
+          <div class="col-board p-3 h-100 d-flex flex-column gap-3">
+            <div class="d-flex justify-content-between align-items-center col-header pb-2">
+              <span class="text-rust">Menunggu</span>
+              <span class="badge rounded-pill mono" style="background:var(--panel-light); color:var(--muted);" id="countMenunggu">0</span>
+            </div>
+            <div class="status-strip" style="background:var(--rust);"></div>
+            <div id="colMenunggu" class="d-flex flex-column gap-3">
+              <div class="empty-state">Memuat tiket…</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dikerjakan -->
+        <div class="col">
+          <div class="col-board p-3 h-100 d-flex flex-column gap-3">
+            <div class="d-flex justify-content-between align-items-center col-header pb-2">
+              <span class="text-navy">Dikerjakan</span>
+              <span class="badge rounded-pill mono" style="background:var(--panel-light); color:var(--muted);" id="countDikerjakan">0</span>
+            </div>
+            <div class="status-strip" style="background:var(--navy);"></div>
+            <div id="colDikerjakan" class="d-flex flex-column gap-3">
+              <div class="empty-state">Memuat tiket…</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selesai -->
+        <div class="col">
+          <div class="col-board p-3 h-100 d-flex flex-column gap-3">
+            <div class="d-flex justify-content-between align-items-center col-header pb-2">
+              <span class="text-sky">Selesai</span>
+              <span class="badge rounded-pill mono" style="background:var(--panel-light); color:var(--muted);" id="countSelesai">0</span>
+            </div>
+            <div class="status-strip" style="background:var(--sky);"></div>
+            <div id="colSelesai" class="d-flex flex-column gap-3">
+              <div class="empty-state">Memuat tiket…</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Lower grid -->
+      <div class="row g-4 mb-4">
+        <div class="col-lg-7">
+          <div class="card p-3 h-100" style="background:var(--panel);">
+            <h2 class="fs-6 mb-1">Pendapatan 7 Hari Terakhir</h2>
+            <div class="tag-value text-navy mb-3" id="revenueTotal">Rp 0</div>
+            <div class="chart-wrap" id="revenueChart">
+              <div class="empty-state">Memuat grafik pendapatan…</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="card p-3 h-100" style="background:var(--panel);">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <div class="d-flex align-items-center gap-2">
+                <h2 class="fs-6 mb-0">Sparepart Menipis</h2>
+              </div>
+              <a href="sparepart.html" class="small text-decoration-none fw-medium text-navy">Kelola stok →</a>
+            </div>
+
+            <div id="lowStockList">
+              <div class="empty-state">Memuat data stok…</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mechanics -->
+      <div class="card p-3" style="background:var(--panel);">
+        <h2 class="fs-6 mb-2">Mekanik Bertugas</h2>
+        <div id="mekanikList">
+          <div class="empty-state">Memuat data mekanik…</div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Kosongkan kalau file ini disajikan satu server dengan Laravel.
+  const API_BASE = '';
+
+  /* ---------- Logout ---------- */
+  async function handleLogout(btn){
+    if(!confirm('Yakin ingin keluar dari akun ini?')) return;
+    if(btn){ btn.disabled = true; }
+    try {
+      await fetch('/api/logout', { method: 'POST', headers: { Accept: 'application/json' } });
+    } catch (err) {
+      // tetap arahkan ke login walau logout API gagal, supaya tidak terjebak di halaman admin
+    } finally {
+      window.location.href = 'login.html';
+    }
+  }
+  ['btnLogoutSidebar', 'btnLogoutMobile'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.addEventListener('click', (e) => { e.preventDefault(); handleLogout(el); });
+  });
+
+  function formatRupiah(n){ return 'Rp ' + Number(n || 0).toLocaleString('id-ID'); }
+
+  function isSameLocalDate(dateStr, ref){
+    if (!dateStr) return false;
+    const d = new Date(dateStr);
+    return d.getFullYear() === ref.getFullYear() && d.getMonth() === ref.getMonth() && d.getDate() === ref.getDate();
+  }
+
+  function initial(name){
+    if (!name) return '?';
+    return name.trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+  }
+
+  async function fetchJson(path){
+    const res = await fetch(`${API_BASE}${path}`, { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) throw new Error(`Gagal memuat ${path} (${res.status})`);
+    return res.json();
+  }
+
+  function renderGreetingAndDate(user){
+    const hour = new Date().getHours();
+    const sapaan = hour < 11 ? 'Selamat Pagi' : hour < 15 ? 'Selamat Siang' : hour < 18 ? 'Selamat Sore' : 'Selamat Malam';
+    document.getElementById('greetingText').textContent = `${sapaan}, ${user && user.name ? user.name.split(' ')[0] : 'Admin'}`;
+    document.getElementById('todayDate').textContent = new Date().toLocaleDateString('id-ID', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    });
+  }
+
+  function renderStatAntrian(tiket){
+    const today = new Date();
+    const baru = tiket.filter(t => isSameLocalDate(t.tanggal_masuk, today));
+    const belumSelesai = tiket.filter(t => t.status === 'menunggu' || t.status === 'dikerjakan');
+    document.getElementById('statAntrian').textContent = belumSelesai.length;
+    document.getElementById('statAntrianSub').textContent = `${baru.length} baru masuk hari ini`;
+  }
+
+  function renderStatPendapatan(tiket, transaksi){
+    const today = new Date();
+    const dariTiket = tiket
+      .filter(t => t.status === 'selesai' || t.status === 'sudah_diambil')
+      .filter(t => isSameLocalDate(t.tanggal_selesai, today))
+      .reduce((sum, t) => sum + Number(t.total_biaya || 0), 0);
+    const dariTransaksi = transaksi
+      .filter(tr => isSameLocalDate(tr.tanggal, today))
+      .reduce((sum, tr) => sum + Number(tr.total || 0), 0);
+    const total = dariTiket + dariTransaksi;
+    document.getElementById('statPendapatan').textContent = formatRupiah(total);
+    document.getElementById('statPendapatanSub').textContent = total > 0 ? 'Dari servis & penjualan hari ini' : 'Belum ada transaksi hari ini';
+  }
+
+  function renderStatSparepart(prediksi){
+    const menipis = prediksi.filter(p => p.urgensi && p.urgensi !== 'aman');
+    document.getElementById('statSparepart').textContent = menipis.length;
+    document.getElementById('statSparepartSub').textContent = menipis.length > 0 ? 'Perlu re-order minggu ini' : 'Stok dalam kondisi aman';
+  }
+
+  function renderStatMekanik(mekanik){
+    const sibuk = mekanik.filter(m => m.status_kerja === 'sibuk').length;
+    document.getElementById('statMekanik').textContent = `${mekanik.length - sibuk} / ${mekanik.length}`;
+    document.getElementById('statMekanikSub').textContent = mekanik.length ? `${sibuk} mekanik sedang sibuk` : 'Belum ada mekanik aktif';
+  }
+
+  const KOMPLEKSITAS_BADGE = { tinggi: 'badge-soft-rust', sedang: 'badge-soft-navy', rendah: 'badge-soft-sky' };
+  const KOMPLEKSITAS_LABEL = { tinggi: 'Tinggi', sedang: 'Sedang', rendah: 'Rendah' };
+  const STATUS_LABEL_SELESAI = { selesai: 'Siap diambil', sudah_diambil: 'Sudah diambil' };
+
+  function ticketCard(t){
+    const badgeClass = KOMPLEKSITAS_BADGE[t.kompleksitas] || 'badge-soft-sky';
+    const badgeLabel = t.status === 'selesai' || t.status === 'sudah_diambil'
+      ? STATUS_LABEL_SELESAI[t.status]
+      : (KOMPLEKSITAS_LABEL[t.kompleksitas] || 'Rendah');
+    const mekanikLabel = t.mekanik ? `<span class="avatar-sm">${initial(t.mekanik.name)}</span> ${t.mekanik.name.split(' ')[0]}` : `<span class="avatar-sm">—</span> Belum ditugaskan`;
+
+    return `
+      <div class="tag-shape ticket-tag p-3">
+        <div class="d-flex justify-content-between gap-2">
+          <div>
+            <div class="mono small text-muted">#${t.nomor_tiket}</div>
+            <div class="fw-semibold">${t.jenis_sepeda}</div>
+            <div class="small text-muted">${t.keluhan || '—'}</div>
+          </div>
+          <span class="badge rounded-pill ${badgeClass} align-self-start">${badgeLabel}</span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mt-2">
+          <span class="small text-muted">${mekanikLabel}</span>
+          <span class="mono small">${formatRupiah(t.total_biaya)}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderBoard(tiket){
+    const today = new Date();
+    const menunggu = tiket.filter(t => t.status === 'menunggu');
+    const dikerjakan = tiket.filter(t => t.status === 'dikerjakan');
+    // kolom "Selesai" di papan cuma nampilin yang selesai HARI INI - biar besok otomatis
+    // kosong lagi, bukan numpuk semua tiket selesai sepanjang masa
+    const selesai = tiket
+      .filter(t => t.status === 'selesai' || t.status === 'sudah_diambil')
+      .filter(t => isSameLocalDate(t.tanggal_selesai, today));
+
+    document.getElementById('countMenunggu').textContent = menunggu.length;
+    document.getElementById('countDikerjakan').textContent = dikerjakan.length;
+    document.getElementById('countSelesai').textContent = selesai.length;
+
+    document.getElementById('colMenunggu').innerHTML = menunggu.length
+      ? menunggu.map(ticketCard).join('')
+      : '<div class="empty-state">Tidak ada tiket menunggu</div>';
+    document.getElementById('colDikerjakan').innerHTML = dikerjakan.length
+      ? dikerjakan.map(ticketCard).join('')
+      : '<div class="empty-state">Tidak ada tiket dikerjakan</div>';
+    document.getElementById('colSelesai').innerHTML = selesai.length
+      ? selesai.slice(0, 6).map(ticketCard).join('')
+      : '<div class="empty-state">Belum ada tiket selesai</div>';
+  }
+
+  function renderRevenueChart(tiket, transaksi){
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      days.push(d);
+    }
+
+    const totals = days.map(day => {
+      const dariTiket = tiket
+        .filter(t => t.status === 'selesai' || t.status === 'sudah_diambil')
+        .filter(t => isSameLocalDate(t.tanggal_selesai, day))
+        .reduce((sum, t) => sum + Number(t.total_biaya || 0), 0);
+      const dariTransaksi = transaksi
+        .filter(tr => isSameLocalDate(tr.tanggal, day))
+        .reduce((sum, tr) => sum + Number(tr.total || 0), 0);
+      return dariTiket + dariTransaksi;
+    });
+
+    const grandTotal = totals.reduce((a, b) => a + b, 0);
+    document.getElementById('revenueTotal').textContent = formatRupiah(grandTotal);
+
+    const max = Math.max(...totals, 1);
+    const labels = days.map(d => d.toLocaleDateString('id-ID', { weekday: 'short' }));
+
+    if (grandTotal === 0) {
+      document.getElementById('revenueChart').innerHTML = '<div class="empty-state">Belum ada pendapatan dalam 7 hari terakhir</div>';
+      return;
+    }
+
+    document.getElementById('revenueChart').innerHTML = totals.map((val, idx) => {
+      const pct = Math.max(4, Math.round((val / max) * 100));
+      const isPeak = val === max && val > 0;
+      return `
+        <div class="bar-col">
+          <div class="bar ${isPeak ? 'peak' : ''}" style="height:${pct}%"></div>
+          <span class="small text-muted text-uppercase">${labels[idx]}</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderMekanikList(mekanik, tiket){
+    if (!mekanik.length) {
+      document.getElementById('mekanikList').innerHTML = '<div class="empty-state">Belum ada mekanik aktif</div>';
+      return;
+    }
+
+    const rows = mekanik.map((m, idx) => {
+      const isLast = idx === mekanik.length - 1;
+      const tugasAktif = tiket.find(t => t.status === 'dikerjakan' && t.mekanik_id === m.id);
+      const statusBadge = m.status_kerja === 'sibuk'
+        ? '<span class="badge rounded-pill badge-soft-navy ms-auto">Sibuk</span>'
+        : m.status_kerja === 'cuti'
+          ? '<span class="badge rounded-pill badge-soft-rust ms-auto">Cuti</span>'
+          : '<span class="badge rounded-pill badge-soft-sky ms-auto">Luang</span>';
+      const desc = tugasAktif
+        ? `Mengerjakan #${tugasAktif.nomor_tiket} — ${tugasAktif.jenis_sepeda}`
+        : (m.status_kerja === 'cuti' ? 'Sedang cuti' : 'Siap menerima tiket baru');
+
+      return `
+        <div class="d-flex align-items-center gap-3 py-2 ${isLast ? '' : 'border-bottom'}" style="border-color:var(--line) !important;">
+          <div class="avatar-md">${initial(m.name)}</div>
+          <div>
+            <div class="fw-semibold small">${m.name}</div>
+            <div class="text-muted" style="font-size:11.5px;">${desc}</div>
+          </div>
+          ${statusBadge}
+        </div>
+      `;
+    }).join('');
+
+    document.getElementById('mekanikList').innerHTML = rows;
+  }
+
+  function renderPrediksiStok(items){
+    const urgensiColor = { segera: 'var(--rust)', perhatian: 'var(--navy)', aman: 'var(--sky)' };
+    const urgensiClass = { segera: 'text-rust', perhatian: 'text-navy', aman: 'text-sky' };
+    const MAX_SCALE = 25; // skala visual progress bar, samakan dengan halaman Sparepart
+
+    if (!items.length) {
+      document.getElementById('lowStockList').innerHTML = '<div class="empty-state">Stok sparepart dalam kondisi aman</div>';
+      return;
+    }
+
+    const shown = items.slice(0, 5);
+    const rows = shown.map((item, idx) => {
+      const pct = Math.min(100, Math.round((item.stok_saat_ini / MAX_SCALE) * 100));
+      const color = urgensiColor[item.urgensi] || 'var(--sky)';
+      const textClass = urgensiClass[item.urgensi] || 'text-sky';
+      const isLow = item.urgensi !== 'aman';
+      const isLast = idx === shown.length - 1;
+
+      return `
+        <div class="d-flex justify-content-between align-items-center py-2 ${isLast ? '' : 'border-bottom'}" style="border-color:var(--line) !important;">
+          <div>
+            <div class="fw-medium small">${item.sparepart}</div>
+            <div class="text-muted" style="font-size:11px;">Kode ${item.kode} · <span class="${textClass} fw-medium">${item.sisa_hari_stok !== null ? '~' + Math.round(item.sisa_hari_stok) + ' hari lagi' : 'belum ada data penjualan'}</span></div>
+          </div>
+          <div class="text-end" style="width:90px;">
+            <div class="mono fw-semibold ${isLow ? 'text-rust' : ''} small">${item.stok_saat_ini} pcs</div>
+            <div class="progress mt-1" style="height:4px;"><div class="progress-bar" style="width:${pct}%; background:${color};"></div></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    document.getElementById('lowStockList').innerHTML = rows;
+  }
+
+  async function init(){
+    const [meRes, tiketRes, mekanikRes, transaksiRes, prediksiRes] = await Promise.allSettled([
+      fetchJson('/api/me'),
+      fetchJson('/api/tiket-servis'),
+      fetchJson('/api/users?job=mekanik'),
+      fetchJson('/api/transaksi'),
+      fetchJson('/api/ai/prediksi-stok'),
+    ]);
+
+    const user = meRes.status === 'fulfilled' ? meRes.value.data : null;
+    renderGreetingAndDate(user);
+
+    const tiket = tiketRes.status === 'fulfilled' ? (tiketRes.value.data || []) : [];
+    const mekanik = mekanikRes.status === 'fulfilled' ? (mekanikRes.value.data || []) : [];
+    const transaksi = transaksiRes.status === 'fulfilled' ? (transaksiRes.value.data || []) : [];
+    const prediksi = prediksiRes.status === 'fulfilled' ? (prediksiRes.value.data || []) : [];
+
+    if (tiketRes.status === 'fulfilled') {
+      renderStatAntrian(tiket);
+      renderBoard(tiket);
+    } else {
+      document.getElementById('statAntrianSub').textContent = 'Gagal memuat data';
+      ['colMenunggu', 'colDikerjakan', 'colSelesai'].forEach(id => {
+        document.getElementById(id).innerHTML = '<div class="empty-state">Gagal memuat tiket</div>';
+      });
+    }
+
+    if (tiketRes.status === 'fulfilled' && transaksiRes.status === 'fulfilled') {
+      renderStatPendapatan(tiket, transaksi);
+      renderRevenueChart(tiket, transaksi);
+    } else {
+      document.getElementById('statPendapatanSub').textContent = 'Gagal memuat data';
+      document.getElementById('revenueChart').innerHTML = '<div class="empty-state">Gagal memuat grafik pendapatan</div>';
+    }
+
+    if (prediksiRes.status === 'fulfilled') {
+      renderStatSparepart(prediksi);
+      renderPrediksiStok(prediksi);
+    } else {
+      document.getElementById('statSparepartSub').textContent = 'Gagal memuat data';
+      document.getElementById('lowStockList').innerHTML = '<div class="empty-state">Gagal memuat data stok</div>';
+    }
+
+    if (mekanikRes.status === 'fulfilled') {
+      renderStatMekanik(mekanik);
+      renderMekanikList(mekanik, tiket);
+    } else {
+      document.getElementById('statMekanikSub').textContent = 'Gagal memuat data';
+      document.getElementById('mekanikList').innerHTML = '<div class="empty-state">Gagal memuat data mekanik</div>';
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>

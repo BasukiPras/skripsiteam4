@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<script src="../mock-api.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gehenk Bike — Pelanggan</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EEF1F7;
+    --panel:#FFFFFF;
+    --panel-light:#E7EBF3;
+    --tint:#E3E8F4;
+    --ink:#131B2E;
+    --muted:#68708A;
+    --navy:#1E3A70;
+    --navy-deep:#0E1F3F;
+    --sky:#2F6FA6;
+    --rust:#C24A20;
+    --line:#DDE3EF;
+  }
+  body{background:var(--bg); color:var(--ink); font-family:'Inter', sans-serif;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  .display, h1, h2, h3, .navbar-brand, .brand-name{font-family:'Oswald', sans-serif; text-transform:uppercase; letter-spacing:.02em;}
+
+  /* sidebar */
+  .sidebar{width:240px; min-height:100vh; background:var(--navy-deep); border-right:1px solid rgba(255,255,255,.06); flex-shrink:0;}
+  .brand-mark{width:34px; height:34px; border-radius:50%; border:3px solid var(--sky); display:flex; align-items:center; justify-content:center; position:relative;}
+  .brand-mark::after{content:''; width:4px; height:4px; background:var(--sky); border-radius:50%;}
+  .brand-name{font-size:16px; font-weight:600; line-height:1.1; color:#fff;}
+  .brand-sub{font-size:10px; color:rgba(255,255,255,.5); letter-spacing:.12em; text-transform:uppercase;}
+  .nav-label{font-size:10.5px; color:rgba(255,255,255,.35); text-transform:uppercase; letter-spacing:.14em; margin:16px 0 6px 12px;}
+  .sidebar .nav-link{color:rgba(255,255,255,.72); font-size:13.5px; font-weight:500; border-radius:8px; display:flex; align-items:center; gap:12px; padding:.6rem .75rem;}
+  .sidebar .nav-link i{font-size:1rem; opacity:.8; width:18px; text-align:center;}
+  .sidebar .nav-link:hover{background:rgba(255,255,255,.06); color:#fff;}
+  .sidebar .nav-link.active{background:rgba(255,255,255,.08); color:#fff; box-shadow:inset 3px 0 0 var(--sky);}
+  .sidebar .nav-link.active i{opacity:1;}
+  .sidebar-foot{background:rgba(255,255,255,.06); border:1px dashed rgba(255,255,255,.15); border-radius:10px; padding:.6rem .75rem; color:rgba(255,255,255,.75);}
+  .dot{width:7px; height:7px; border-radius:50%; background:var(--sky); display:inline-block;}
+  .nav-link-logout {
+  color: rgba(255, 140, 120, .85) !important;
+}
+
+.nav-link-logout:hover {
+  background: rgba(194, 74, 32, .18) !important; /* Latar merah muda saat hover */
+  color: #fff !important;
+}
+
+.nav-link-logout i {
+  opacity: 1; /* Ikon panah logout selalu jelas */
+}
+  .tag-shape{position:relative; background:var(--tint); border:1px solid var(--line); border-radius:4px 10px 10px 4px; padding-left:1.9rem !important; box-shadow:0 1px 2px rgba(19,27,46,.06);}
+  .tag-shape::before{content:''; position:absolute; left:12px; top:50%; transform:translateY(-50%); width:8px; height:8px; border-radius:50%; background:var(--bg); border:1px solid var(--line);}
+  .tag-shape::after{content:''; position:absolute; left:-1px; top:50%; transform:translateY(-50%); width:10px; height:20px; background:var(--bg); border-radius:0 10px 10px 0;}
+  .tag-label{font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; font-weight:600;}
+  .tag-value{font-family:'IBM Plex Mono', monospace; font-size:24px; font-weight:600;}
+  .text-navy{color:var(--navy) !important;}
+  .text-sky{color:var(--sky) !important;}
+  .text-rust{color:var(--rust) !important;}
+  .card{border-color:var(--line);}
+
+  .badge-soft-rust{background:rgba(194,74,32,.16); color:var(--rust); font-weight:600;}
+  .badge-soft-sky{background:rgba(47,111,166,.16); color:var(--sky); font-weight:600;}
+  .badge-soft-navy{background:rgba(30,58,112,.14); color:var(--navy); font-weight:600;}
+  .badge-soft-muted{background:var(--panel-light); color:var(--muted); font-weight:600;}
+
+  .panel{background:var(--panel); border:1px solid var(--line); border-radius:10px;}
+  .cust-table thead th{
+    font-family:'Oswald', sans-serif; font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--muted); font-weight:600; border-bottom:2px solid var(--line); padding:.9rem .75rem; white-space:nowrap;
+  }
+  .cust-table tbody td{padding:.85rem .75rem; vertical-align:middle; border-bottom:1px solid var(--line); font-size:13.5px;}
+  .cust-table tbody tr:last-child td{border-bottom:none;}
+  .cust-table tbody tr:hover{background:var(--tint);}
+
+  .avatar-cust{
+    width:36px; height:36px; border-radius:50%; background:var(--panel-light); border:2px solid var(--sky);
+    display:flex; align-items:center; justify-content:center; font-family:'Oswald',sans-serif; font-size:12.5px; font-weight:600; flex-shrink:0;
+  }
+  .cust-name{font-weight:600; font-size:13.5px;}
+  .cust-phone{font-size:11.5px; color:var(--muted);}
+
+  .icon-btn{
+    width:30px; height:30px; border-radius:7px; border:1px solid var(--line); background:var(--panel);
+    display:inline-flex; align-items:center; justify-content:center; color:var(--muted); font-size:13px;
+  }
+  .icon-btn:hover{background:var(--tint); color:var(--ink); border-color:var(--navy);}
+  .icon-btn.icon-btn-del:hover{color:var(--rust); border-color:var(--rust); background:rgba(194,74,32,.1);}
+
+  .form-control:focus, .form-select:focus{box-shadow:none; border-color:var(--navy);}
+  .btn-newcust{background:var(--navy); border:none; color:#fff; font-weight:600; border-radius:8px; padding:.55rem 1.1rem; white-space:nowrap;}
+  .btn-newcust:hover{background:#16294D; color:#fff;}
+  .btn-newcust:disabled{opacity:.6; cursor:not-allowed;}
+  .modal-content{background:var(--panel); border:1px solid var(--line); border-radius:12px;}
+  .modal-header, .modal-footer{border-color:var(--line);}
+  .empty-state{color:var(--muted); font-size:13px; text-align:center; padding:1.5rem .5rem;}
+  .form-text-error{color:var(--rust); font-size:12px;}
+  .riwayat-item{display:flex; gap:.75rem; padding:.7rem 0; border-bottom:1px solid var(--line);}
+  .riwayat-item:last-child{border-bottom:none;}
+  .riwayat-icon{width:34px; height:34px; border-radius:8px; background:var(--panel-light); display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--navy); flex-shrink:0;}
+
+  /* Mobile: tabel pelanggan dilipat jadi kartu, bukan scroll ke samping */
+  @media (max-width: 767.98px){
+    .btn-newcust{width:100%;}
+    #custSearch, .input-group{max-width:none !important; width:100%;}
+
+    .cust-table thead{display:none;}
+    .cust-table, .cust-table tbody, .cust-table tr, .cust-table td{display:block; width:100%;}
+    .cust-table tr{
+      border:1px solid var(--line); border-radius:10px; margin:0 .75rem .75rem; padding:.5rem .85rem;
+      box-shadow:0 1px 2px rgba(19,27,46,.05);
+    }
+    .cust-table tbody tr:last-child{margin-bottom:.75rem;}
+    .cust-table td{border-bottom:none !important; padding:.4rem 0;}
+    .cust-table td[data-label]{
+      display:flex; align-items:center; justify-content:space-between; gap:.75rem;
+      border-top:1px solid var(--line); padding-top:.5rem; margin-top:.15rem;
+    }
+    .cust-table td[data-label]::before{
+      content:attr(data-label); font-size:11px; color:var(--muted); font-weight:600;
+      text-transform:uppercase; letter-spacing:.04em; flex-shrink:0;
+    }
+    .cust-table td.cust-actions{
+      display:flex; justify-content:flex-end; gap:.4rem; border-top:1px solid var(--line);
+      padding-top:.6rem; margin-top:.3rem;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="d-flex">
+
+  <!-- Sidebar -->
+  <aside class="sidebar d-none d-lg-flex flex-column p-3">
+    <div class="d-flex align-items-center gap-2 mb-4 px-1">
+      <img src="../storage/Bike_Only.png" alt="Logo" width="75" height="50" class="d-inline-block align-text-top">
+      <div>
+        <div class="brand-name">Gehenk Bike</div>
+        <div class="brand-sub">by Cecep</div>
+      </div>
+    </div>
+
+    <div class="nav-label">Utama</div>
+    <ul class="nav nav-pills flex-column mb-2">
+      <li class="nav-item"><a class="nav-link" href="bengkel-dashboard.html"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a></li>
+      <li class="nav-item"><a class="nav-link" href="pelayanan.html"><i class="bi bi-cart-check-fill"></i> Pelayanan</a></li>
+      <li class="nav-item"><a class="nav-link" href="antrian-servis.html"><i class="bi bi-clock-history"></i> Antrian Servis</a></li>
+      <li class="nav-item"><a class="nav-link active" href="pelanggan.html"><i class="bi bi-people-fill"></i> Pelanggan</a></li>
+      <li class="nav-item"><a class="nav-link" href="sparepart.html"><i class="bi bi-box-seam-fill"></i> Sparepart</a></li>
+      <li class="nav-item"><a class="nav-link" href="sepeda.html"><i class="bi bi-bicycle"></i> Sepeda</a></li>
+      <li class="nav-item"><a class="nav-link" href="mekanik.html"><i class="bi bi-tools"></i> Mekanik</a></li>
+    </ul>
+
+    <div class="nav-label">Lainnya</div>
+    <ul class="nav nav-pills flex-column">
+      <li class="nav-item"><a class="nav-link" href="laporan.html"><i class="bi bi-bar-chart-line-fill"></i> Laporan</a></li>
+      <li class="nav-item"><a class="nav-link" href="pengaturan.html"><i class="bi bi-gear-fill"></i> Pengaturan</a></li>
+      <li class="nav-item"><a class="nav-link nav-link-logout" href="#" id="btnLogoutSidebar"><i class="bi bi-box-arrow-right"></i> Keluar</a></li>
+    </ul>
+
+   
+  </aside>
+
+  <!-- Main -->
+  <div class="flex-grow-1">
+
+    <nav class="navbar d-lg-none border-bottom" style="background:var(--navy-deep); border-color:var(--navy-deep) !important;">
+      <div class="container-fluid">
+        <button class="btn btn-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileNav" style="border:1px solid rgba(255,255,255,.2); color:#fff;">
+          <i class="bi bi-list fs-5"></i>
+        </button>
+        <span class="brand-name fs-6 mb-0" style="color:#fff;">Gehenk Bike</span>
+        <span style="width:38px;"></span>
+      </div>
+    </nav>
+    <div class="offcanvas offcanvas-start" id="mobileNav" style="background:var(--navy-deep); width:240px;">
+      <div class="offcanvas-body p-3">
+        <div class="nav-label">Utama</div>
+        <ul class="nav nav-pills flex-column mb-2">
+          <li class="nav-item"><a class="nav-link" href="bengkel-dashboard.html"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="pelayanan.html"><i class="bi bi-cart-check-fill"></i> Pelayanan</a></li>
+          <li class="nav-item"><a class="nav-link" href="antrian-servis.html"><i class="bi bi-clock-history"></i> Antrian Servis</a></li>
+          <li class="nav-item"><a class="nav-link active" href="pelanggan.html"><i class="bi bi-people-fill"></i> Pelanggan</a></li>
+          <li class="nav-item"><a class="nav-link" href="sparepart.html"><i class="bi bi-box-seam-fill"></i> Sparepart</a></li>
+          <li class="nav-item"><a class="nav-link" href="sepeda.html"><i class="bi bi-bicycle"></i> Sepeda</a></li>
+          <li class="nav-item"><a class="nav-link" href="mekanik.html"><i class="bi bi-tools"></i> Mekanik</a></li>
+        </ul>
+        <div class="nav-label">Lainnya</div>
+        <ul class="nav nav-pills flex-column">
+          <li class="nav-item"><a class="nav-link" href="laporan.html"><i class="bi bi-bar-chart-line-fill"></i> Laporan</a></li>
+          <li class="nav-item"><a class="nav-link" href="pengaturan.html"><i class="bi bi-gear-fill"></i> Pengaturan</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <main class="p-3 p-lg-5">
+
+      <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+        <div>
+          <div class="text-navy fw-semibold small text-uppercase" style="letter-spacing:.16em; font-size:11px;">Data &amp; Riwayat</div>
+          <h1 class="fs-3 fw-semibold mb-0 mt-1">Pelanggan</h1>
+          <div class="text-muted small mt-1">Kelola data pelanggan dan riwayat kunjungan bengkel</div>
+        </div>
+        <button class="btn-newcust" data-bs-toggle="modal" data-bs-target="#modalTambahPelanggan">
+          <i class="bi bi-person-plus-fill me-1"></i>Tambah Pelanggan
+        </button>
+      </div>
+
+      <!-- Stat tags -->
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3 mb-4">
+        <div class="col">
+          <div class="tag-shape p-3 h-100">
+            <div class="tag-label">Total Pelanggan</div>
+            <div class="tag-value" id="statTotal">–</div>
+            <div class="small text-muted">Terdaftar sejak buka bengkel</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="tag-shape p-3 h-100">
+            <div class="tag-label">Pelanggan Baru</div>
+            <div class="tag-value text-navy" id="statBaru">–</div>
+            <div class="small text-muted" id="statBaruSub">Bulan ini</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="tag-shape p-3 h-100">
+            <div class="tag-label">Pelanggan Aktif</div>
+            <div class="tag-value text-sky" id="statAktif">–</div>
+            <div class="small text-muted">Servis dalam 30 hari terakhir</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="tag-shape p-3 h-100">
+            <div class="tag-label">Total Belanja Bulan Ini</div>
+            <div class="tag-value text-rust" id="statBelanja">–</div>
+            <div class="small text-muted">Dari seluruh pelanggan</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search & filter -->
+      <div class="d-flex flex-wrap justify-content-end align-items-center gap-3 mb-3">
+        <div class="input-group" style="max-width:260px; background:var(--panel); border:1px solid var(--line); border-radius:8px;">
+          <span class="input-group-text bg-transparent border-0"><i class="bi bi-search" style="color:var(--muted);"></i></span>
+          <input type="text" class="form-control border-0 bg-transparent" id="custSearch" placeholder="Cari nama atau no. HP..." style="box-shadow:none; color:var(--ink);">
+        </div>
+      </div>
+
+      <!-- Customer table -->
+      <div class="panel p-0">
+        <div class="table-responsive">
+          <table class="table mb-0 cust-table">
+            <thead>
+              <tr>
+                <th>Pelanggan</th>
+                <th>Sepeda Terakhir</th>
+                <th class="text-center">Jml. Servis</th>
+                <th>Total Belanja</th>
+                <th>Kunjungan Terakhir</th>
+                <th class="text-end">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="custTableBody">
+              <tr><td colspan="6" class="empty-state">Memuat data pelanggan…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="p-3 text-center text-muted small d-none" id="noResultRow">
+          <i class="bi bi-person-x fs-4 d-block mb-2"></i>Tidak ada pelanggan yang cocok.
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Modal Tambah Pelanggan -->
+<div class="modal fade" id="modalTambahPelanggan" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fs-6" style="font-family:'Oswald',sans-serif; text-transform:uppercase;">Tambah Pelanggan Baru</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label small fw-medium">Nama Pelanggan</label>
+          <input type="text" class="form-control" id="newCustName" placeholder="cth. Bagus Prasetyo">
+        </div>
+        <div class="mb-0">
+          <label class="form-label small fw-medium">Nomor HP / WhatsApp</label>
+          <input type="text" class="form-control" id="newCustPhone" placeholder="08xx-xxxx-xxxx">
+        </div>
+        <div class="form-text-error d-none mt-2" id="newCustError"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm" data-bs-dismiss="modal" style="border:1px solid var(--line); background:var(--panel);">Batal</button>
+        <button type="button" class="btn btn-sm btn-newcust" id="btnSaveCust">Simpan Pelanggan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Edit Pelanggan -->
+<div class="modal fade" id="modalEditPelanggan" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fs-6" style="font-family:'Oswald',sans-serif; text-transform:uppercase;">Edit Pelanggan</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editCustId">
+        <div class="mb-3">
+          <label class="form-label small fw-medium">Nama Pelanggan</label>
+          <input type="text" class="form-control" id="editCustName">
+        </div>
+        <div class="mb-0">
+          <label class="form-label small fw-medium">Nomor HP / WhatsApp</label>
+          <input type="text" class="form-control" id="editCustPhone">
+        </div>
+        <div class="form-text-error d-none mt-2" id="editCustError"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm" data-bs-dismiss="modal" style="border:1px solid var(--line); background:var(--panel);">Batal</button>
+        <button type="button" class="btn btn-sm btn-newcust" id="btnUpdateCust">Simpan Perubahan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Riwayat Pelanggan -->
+<div class="modal fade" id="modalRiwayat" tabindex="-1">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fs-6" style="font-family:'Oswald',sans-serif; text-transform:uppercase;">Riwayat — <span id="riwayatNama"></span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="riwayatBody"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script>
+  const API_BASE = '';
+
+  /* ---------- Logout ---------- */
+  async function handleLogout(btn){
+    if(!confirm('Yakin ingin keluar dari akun ini?')) return;
+    if(btn){ btn.disabled = true; }
+    try {
+      await fetch('/api/logout', { method: 'POST', headers: { Accept: 'application/json' } });
+    } catch (err) {
+      // tetap arahkan ke login walau logout API gagal, supaya tidak terjebak di halaman admin
+    } finally {
+      window.location.href = 'login.html';
+    }
+  }
+  ['btnLogoutSidebar', 'btnLogoutMobile'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.addEventListener('click', (e) => { e.preventDefault(); handleLogout(el); });
+  });
+
+  /* Batasi akses mekanik: hanya boleh Pelayanan & Antrian Servis (buat/kerjakan tiket, pakai sparepart) */
+  (async function guardAksesMekanik(){
+    const HALAMAN_TERLARANG = ['bengkel-dashboard.html','pelanggan.html','sparepart.html','sepeda.html','mekanik.html','laporan.html','pengaturan.html'];
+    try {
+      const res = await fetch('/api/me', { headers: { Accept: 'application/json' } });
+      const { data } = await res.json();
+      if (!data || data.job !== 'mekanik') return;
+
+      const halamanIni = location.pathname.split('/').pop();
+      if (HALAMAN_TERLARANG.includes(halamanIni)) { location.href = 'pelayanan.html'; return; }
+
+      document.querySelectorAll('.sidebar a.nav-link, .offcanvas a.nav-link').forEach(a => {
+        if (HALAMAN_TERLARANG.includes(a.getAttribute('href'))) a.closest('li')?.classList.add('d-none');
+      });
+    } catch (err) { /* kalau /api/me gagal, biarkan halaman tampil normal */ }
+  })();
+
+  function formatRupiah(n){ return 'Rp ' + Number(n || 0).toLocaleString('id-ID'); }
+  function formatTanggal(dateStr){
+    if(!dateStr) return '—';
+    return new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  function isThisMonth(dateStr){
+    if(!dateStr) return false;
+    const d = new Date(dateStr), now = new Date();
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  }
+  function isWithinDays(dateStr, days){
+    if(!dateStr) return false;
+    const diff = (new Date() - new Date(dateStr)) / (1000 * 60 * 60 * 24);
+    return diff <= days;
+  }
+
+  async function fetchJson(path, options){
+    const res = await fetch(`${API_BASE}${path}`, {
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      ...options,
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const err = new Error(body.message || (body.errors && Object.values(body.errors)[0][0]) || `Gagal memanggil ${path} (${res.status})`);
+      err.body = body;
+      throw err;
+    }
+    return body;
+  }
+
+  /** Ambil semua halaman dari endpoint yang di-paginate Laravel (data + meta last_page). */
+  async function fetchAllPages(path, maxPages = 20){
+    let page = 1, all = [], lastPage = 1;
+    do {
+      const sep = path.includes('?') ? '&' : '?';
+      const res = await fetchJson(`${path}${sep}page=${page}`);
+      all = all.concat(res.data || []);
+      lastPage = res.last_page || 1;
+      page++;
+    } while (page <= lastPage && page <= maxPages);
+    return all;
+  }
+
+  /* ---------- Data agregat: tiket & transaksi per pelanggan ---------- */
+  let ticketsByPelanggan = {};   // pelanggan_id -> [tiket,...]
+  let transaksiByPelanggan = {}; // pelanggan_id -> [transaksi,...]
+  let totalTiketBulanIni = 0;
+  let totalTransaksiBulanIni = 0;
+
+  async function loadAggregates(){
+    const [tiketRes, transaksiRes] = await Promise.allSettled([
+      fetchJson('/api/tiket-servis'),
+      fetchAllPages('/api/transaksi'),
+    ]);
+
+    const tiket = tiketRes.status === 'fulfilled' ? (tiketRes.value.data || []) : [];
+    const transaksi = transaksiRes.status === 'fulfilled' ? transaksiRes.value : [];
+
+    ticketsByPelanggan = {};
+    tiket.forEach(t => {
+      if(!t.pelanggan_id) return;
+      (ticketsByPelanggan[t.pelanggan_id] ||= []).push(t);
+      if(isThisMonth(t.tanggal_masuk)) totalTiketBulanIni += Number(t.total_biaya || 0);
+    });
+
+    transaksiByPelanggan = {};
+    transaksi.forEach(tr => {
+      if(!tr.pelanggan_id) return;
+      (transaksiByPelanggan[tr.pelanggan_id] ||= []).push(tr);
+      if(isThisMonth(tr.tanggal)) totalTransaksiBulanIni += Number(tr.total || 0);
+    });
+
+    document.getElementById('statBelanja').textContent = formatRupiah(totalTiketBulanIni + totalTransaksiBulanIni);
+
+    const aktifIds = new Set();
+    tiket.forEach(t => { if(t.pelanggan_id && isWithinDays(t.tanggal_masuk, 30)) aktifIds.add(t.pelanggan_id); });
+    document.getElementById('statAktif').textContent = aktifIds.size;
+  }
+
+  function aggregateFor(pelangganId){
+    const tiket = ticketsByPelanggan[pelangganId] || [];
+    const transaksi = transaksiByPelanggan[pelangganId] || [];
+    const jmlServis = tiket.length;
+    const totalBelanja = tiket.reduce((s, t) => s + Number(t.total_biaya || 0), 0)
+      + transaksi.reduce((s, tr) => s + Number(tr.total || 0), 0);
+
+    const tanggalTiket = tiket.map(t => t.tanggal_masuk).filter(Boolean);
+    const tanggalTransaksi = transaksi.map(tr => tr.tanggal).filter(Boolean);
+    const semuaTanggal = [...tanggalTiket, ...tanggalTransaksi].sort((a, b) => new Date(b) - new Date(a));
+    const kunjunganTerakhir = semuaTanggal[0] || null;
+
+    const tiketTerbaru = [...tiket].sort((a, b) => new Date(b.tanggal_masuk) - new Date(a.tanggal_masuk))[0];
+    const sepedaTerakhir = tiketTerbaru ? tiketTerbaru.jenis_sepeda : '—';
+
+    return { jmlServis, totalBelanja, kunjunganTerakhir, sepedaTerakhir };
+  }
+
+  /* ---------- Render tabel pelanggan ---------- */
+  const tbody = document.getElementById('custTableBody');
+  const noResultRow = document.getElementById('noResultRow');
+  const custSearch = document.getElementById('custSearch');
+  let currentPelanggan = [];
+
+  function waNumber(noHp){
+    const digits = (noHp || '').replace(/\D/g, '');
+    return digits.startsWith('0') ? '62' + digits.slice(1) : digits;
+  }
+
+  function custRow(p){
+    const agg = aggregateFor(p.id);
+    const initials = (p.nama || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+
+    return `
+      <tr data-search="${(p.nama + ' ' + p.no_hp).toLowerCase()}">
+        <td>
+          <div class="d-flex align-items-center gap-2">
+            <div class="avatar-cust">${initials}</div>
+            <div><div class="cust-name">${p.nama}</div><div class="cust-phone">${p.no_hp}</div></div>
+          </div>
+        </td>
+        <td data-label="Sepeda Terakhir">${agg.sepedaTerakhir}</td>
+        <td data-label="Jml. Servis" class="text-center mono">${agg.jmlServis}</td>
+        <td data-label="Total Belanja" class="mono">${formatRupiah(agg.totalBelanja)}</td>
+        <td data-label="Kunjungan Terakhir" class="text-muted">${formatTanggal(agg.kunjunganTerakhir)}</td>
+        <td class="text-end cust-actions">
+          <button type="button" class="icon-btn" title="Lihat riwayat" data-riwayat="${p.id}" data-nama="${p.nama}"><i class="bi bi-clock-history"></i></button>
+          <a href="https://wa.me/${waNumber(p.no_hp)}" target="_blank" rel="noopener" class="icon-btn" title="Chat WhatsApp"><i class="bi bi-whatsapp"></i></a>
+          <button type="button" class="icon-btn" title="Edit pelanggan" data-edit="${p.id}"><i class="bi bi-pencil-fill"></i></button>
+          <button type="button" class="icon-btn icon-btn-del" title="Hapus pelanggan" data-del="${p.id}" data-nama="${p.nama}"><i class="bi bi-trash3"></i></button>
+        </td>
+      </tr>
+    `;
+  }
+
+  function renderTable(){
+    if(!currentPelanggan.length){
+      tbody.innerHTML = '';
+      noResultRow.classList.remove('d-none');
+      return;
+    }
+    noResultRow.classList.add('d-none');
+    tbody.innerHTML = currentPelanggan.map(custRow).join('');
+  }
+
+  /* ---------- Modal Riwayat ---------- */
+  const modalRiwayatEl = document.getElementById('modalRiwayat');
+  const modalRiwayat = new bootstrap.Modal(modalRiwayatEl);
+  const riwayatBody = document.getElementById('riwayatBody');
+
+  function riwayatItemHtml({ tanggal, badge, icon, judul, keterangan, nominal }){
+    return `
+      <div class="riwayat-item">
+        <div class="riwayat-icon"><i class="bi ${icon}"></i></div>
+        <div class="flex-grow-1">
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="fw-semibold" style="font-size:13px;">${judul}</span>
+            <span class="badge rounded-pill ${badge.cls}" style="font-size:10px;">${badge.label}</span>
+          </div>
+          <div class="small text-muted">${keterangan}</div>
+          <div class="small text-muted">${formatTanggal(tanggal)}</div>
+        </div>
+        <div class="mono fw-semibold flex-shrink-0">${formatRupiah(nominal)}</div>
+      </div>
+    `;
+  }
+
+  function openRiwayat(pelangganId, nama){
+    document.getElementById('riwayatNama').textContent = nama;
+
+    const tiket = (ticketsByPelanggan[pelangganId] || []).map(t => ({
+      tanggal: t.tanggal_masuk,
+      badge: { cls: 'badge-soft-navy', label: 'Servis' },
+      icon: 'bi-tools',
+      judul: `#${t.nomor_tiket} — ${t.jenis_sepeda}`,
+      keterangan: t.keluhan || t.status || '—',
+      nominal: t.total_biaya,
+    }));
+
+    const transaksi = (transaksiByPelanggan[pelangganId] || []).map(tr => ({
+      tanggal: tr.tanggal,
+      badge: { cls: 'badge-soft-sky', label: 'Pembelian' },
+      icon: 'bi-bag-check',
+      judul: `Transaksi #${tr.id}`,
+      keterangan: tr.metode_pembayaran || '—',
+      nominal: tr.total,
+    }));
+
+    const semua = [...tiket, ...transaksi].sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+
+    riwayatBody.innerHTML = semua.length
+      ? semua.map(riwayatItemHtml).join('')
+      : '<div class="empty-state">Belum ada riwayat servis atau pembelian.</div>';
+
+    modalRiwayat.show();
+  }
+
+  /* ---------- Modal Edit ---------- */
+  const modalEditEl = document.getElementById('modalEditPelanggan');
+  const modalEdit = new bootstrap.Modal(modalEditEl);
+  const editCustError = document.getElementById('editCustError');
+  const btnUpdateCust = document.getElementById('btnUpdateCust');
+
+  function openEdit(p){
+    document.getElementById('editCustId').value = p.id;
+    document.getElementById('editCustName').value = p.nama;
+    document.getElementById('editCustPhone').value = p.no_hp;
+    editCustError.classList.add('d-none');
+    modalEdit.show();
+  }
+
+  btnUpdateCust.addEventListener('click', async () => {
+    const id = document.getElementById('editCustId').value;
+    const nama = document.getElementById('editCustName').value.trim();
+    const noHp = document.getElementById('editCustPhone').value.trim();
+
+    editCustError.classList.add('d-none');
+    if(!nama || !noHp){
+      editCustError.textContent = 'Nama dan nomor HP wajib diisi.';
+      editCustError.classList.remove('d-none');
+      return;
+    }
+
+    btnUpdateCust.disabled = true;
+    btnUpdateCust.textContent = 'Menyimpan…';
+
+    try {
+      await fetchJson(`/api/pelanggan/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ nama, no_hp: noHp }),
+      });
+      modalEdit.hide();
+      await loadPelanggan();
+    } catch (err) {
+      editCustError.textContent = err.message || 'Gagal menyimpan perubahan.';
+      editCustError.classList.remove('d-none');
+    } finally {
+      btnUpdateCust.disabled = false;
+      btnUpdateCust.textContent = 'Simpan Perubahan';
+    }
+  });
+
+  tbody.addEventListener('click', async (e) => {
+    const riwayatBtn = e.target.closest('button[data-riwayat]');
+    if(riwayatBtn){ openRiwayat(parseInt(riwayatBtn.dataset.riwayat, 10), riwayatBtn.dataset.nama); return; }
+
+    const editBtn = e.target.closest('button[data-edit]');
+    if(editBtn){
+      const p = currentPelanggan.find(c => c.id === parseInt(editBtn.dataset.edit, 10));
+      if(p) openEdit(p);
+      return;
+    }
+
+    const delBtn = e.target.closest('button[data-del]');
+    if(delBtn){
+      if(!confirm(`Hapus pelanggan "${delBtn.dataset.nama}"? Data ini akan dipindahkan ke sampah.`)) return;
+      delBtn.disabled = true;
+      try {
+        await fetchJson(`/api/pelanggan/${delBtn.dataset.del}`, { method: 'DELETE' });
+        await loadPelanggan();
+      } catch (err) {
+        alert(err.message || 'Gagal menghapus pelanggan.');
+        delBtn.disabled = false;
+      }
+      return;
+    }
+  });
+
+  let searchTimer = null;
+  async function loadPelanggan(){
+    const query = custSearch.value.trim();
+    try {
+      const path = query ? `/api/pelanggan?search=${encodeURIComponent(query)}` : '/api/pelanggan';
+      currentPelanggan = await fetchAllPages(path);
+      renderTable();
+      if(!query) document.getElementById('statTotal').textContent = currentPelanggan.length;
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="6" class="empty-state">Gagal memuat data pelanggan.</td></tr>`;
+    }
+  }
+
+  custSearch.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(loadPelanggan, 300);
+  });
+
+  /* ---------- Pelanggan baru ---------- */
+  function updateStatBaru(){
+    const bulanIni = currentPelanggan.filter(p => isThisMonth(p.created_at)).length;
+    document.getElementById('statBaru').textContent = bulanIni;
+    document.getElementById('statBaruSub').textContent = 'Bulan ' + new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+  }
+
+  const newCustError = document.getElementById('newCustError');
+  const btnSaveCust = document.getElementById('btnSaveCust');
+
+  btnSaveCust.addEventListener('click', async () => {
+    const nama = document.getElementById('newCustName').value.trim();
+    const noHp = document.getElementById('newCustPhone').value.trim();
+    newCustError.classList.add('d-none');
+
+    if(!nama || !noHp){
+      newCustError.textContent = 'Nama dan nomor HP wajib diisi.';
+      newCustError.classList.remove('d-none');
+      return;
+    }
+
+    btnSaveCust.disabled = true;
+    btnSaveCust.textContent = 'Menyimpan…';
+
+    try {
+      await fetchJson('/api/pelanggan', {
+        method: 'POST',
+        body: JSON.stringify({ nama, no_hp: noHp }),
+      });
+
+      document.getElementById('newCustName').value = '';
+      document.getElementById('newCustPhone').value = '';
+      bootstrap.Modal.getInstance(document.getElementById('modalTambahPelanggan')).hide();
+
+      await loadPelanggan();
+      updateStatBaru();
+    } catch (err) {
+      newCustError.textContent = err.message || 'Gagal menyimpan pelanggan.';
+      newCustError.classList.remove('d-none');
+    } finally {
+      btnSaveCust.disabled = false;
+      btnSaveCust.textContent = 'Simpan Pelanggan';
+    }
+  });
+
+  async function init(){
+    await loadAggregates();
+    await loadPelanggan();
+    updateStatBaru();
+  }
+
+  init();
+</script>
+</body>
+</html>

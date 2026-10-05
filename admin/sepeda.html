@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<script src="../mock-api.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gehenk Bike — Sepeda</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EEF1F7;
+    --panel:#FFFFFF;
+    --panel-light:#E7EBF3;
+    --tint:#E3E8F4;
+    --ink:#131B2E;
+    --muted:#68708A;
+    --navy:#1E3A70;
+    --navy-deep:#0E1F3F;
+    --sky:#2F6FA6;
+    --rust:#C24A20;
+    --line:#DDE3EF;
+  }
+  body{background:var(--bg); color:var(--ink); font-family:'Inter', sans-serif;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  .display, h1, h2, h3, .navbar-brand, .brand-name{font-family:'Oswald', sans-serif; text-transform:uppercase; letter-spacing:.02em;}
+
+  /* sidebar */
+  .sidebar{width:240px; min-height:100vh; background:var(--navy-deep); border-right:1px solid rgba(255,255,255,.06); flex-shrink:0;}
+  .brand-mark{width:34px; height:34px; border-radius:50%; border:3px solid var(--sky); display:flex; align-items:center; justify-content:center; position:relative;}
+  .brand-mark::after{content:''; width:4px; height:4px; background:var(--sky); border-radius:50%;}
+  .brand-name{font-size:16px; font-weight:600; line-height:1.1; color:#fff;}
+  .brand-sub{font-size:10px; color:rgba(255,255,255,.5); letter-spacing:.12em; text-transform:uppercase;}
+  .nav-label{font-size:10.5px; color:rgba(255,255,255,.35); text-transform:uppercase; letter-spacing:.14em; margin:16px 0 6px 12px;}
+  .sidebar .nav-link{color:rgba(255,255,255,.72); font-size:13.5px; font-weight:500; border-radius:8px; display:flex; align-items:center; gap:12px; padding:.6rem .75rem;}
+  .sidebar .nav-link i{font-size:1rem; opacity:.8; width:18px; text-align:center;}
+  .sidebar .nav-link:hover{background:rgba(255,255,255,.06); color:#fff;}
+  .sidebar .nav-link.active{background:rgba(255,255,255,.08); color:#fff; box-shadow:inset 3px 0 0 var(--sky);}
+  .sidebar .nav-link.active i{opacity:1;}
+  .sidebar-foot{background:rgba(255,255,255,.06); border:1px dashed rgba(255,255,255,.15); border-radius:10px; padding:.6rem .75rem; color:rgba(255,255,255,.75);}
+  .dot{width:7px; height:7px; border-radius:50%; background:var(--sky); display:inline-block;}
+
+  .tag-shape{position:relative; background:var(--tint); border:1px solid var(--line); border-radius:4px 10px 10px 4px; padding-left:1.9rem !important; box-shadow:0 1px 2px rgba(19,27,46,.06);}
+  .tag-shape::before{content:''; position:absolute; left:12px; top:50%; transform:translateY(-50%); width:8px; height:8px; border-radius:50%; background:var(--bg); border:1px solid var(--line);}
+  .tag-shape::after{content:''; position:absolute; left:-1px; top:50%; transform:translateY(-50%); width:10px; height:20px; background:var(--bg); border-radius:0 10px 10px 0;}
+  .tag-label{font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; font-weight:600;}
+  .tag-value{font-family:'IBM Plex Mono', monospace; font-size:24px; font-weight:600;}
+  .text-navy{color:var(--navy) !important;}
+  .text-sky{color:var(--sky) !important;}
+  .text-rust{color:var(--rust) !important;}
+  .card{border-color:var(--line);}
+
+  .badge-soft-rust{background:rgba(194,74,32,.16); color:var(--rust); font-weight:600;}
+  .badge-soft-sky{background:rgba(47,111,166,.16); color:var(--sky); font-weight:600;}
+  .badge-soft-navy{background:rgba(30,58,112,.14); color:var(--navy); font-weight:600;}
+  .badge-cat{background:var(--panel-light); color:var(--ink); font-weight:600; border:1px solid var(--line);}
+  .form-text-hint{color:var(--muted); font-size:11.5px;}
+
+  .queue-filter{border:1px solid var(--line); border-radius:8px; color:var(--muted); font-weight:600; font-size:13px; padding:.5rem 1rem; background:var(--panel); cursor:pointer;}
+  .queue-filter.active{background:var(--ink); color:var(--tint); border-color:var(--ink);}
+
+  /* etalase card */
+  .bike-card{background:var(--panel); border:1px solid var(--line); border-radius:12px; overflow:hidden; height:100%; display:flex; flex-direction:column;}
+  .bike-display{
+    height:120px; background:linear-gradient(160deg, var(--tint), var(--panel-light));
+    display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; border-bottom:1px solid var(--line);
+  }
+  .bike-display i{font-size:44px; color:var(--navy); opacity:.85;}
+  .bike-edit-btn{
+    position:absolute; bottom:8px; right:8px; width:28px; height:28px; border-radius:50%; border:none;
+    background:rgba(255,255,255,.92); color:var(--navy); display:flex; align-items:center; justify-content:center; font-size:12px;
+  }
+  .bike-edit-btn:hover{background:#fff;}
+  .bike-del-btn{
+    position:absolute; bottom:8px; right:42px; width:28px; height:28px; border-radius:50%; border:none;
+    background:rgba(255,255,255,.92); color:var(--rust); display:flex; align-items:center; justify-content:center; font-size:12px;
+  }
+  .bike-del-btn:hover{background:#fff;}
+  .bike-condition{
+    position:absolute; top:10px; left:10px; font-size:10.5px; font-weight:700; padding:.3rem .6rem;
+    border-radius:20px; text-transform:uppercase; letter-spacing:.03em;
+  }
+  .bike-condition.baru{background:var(--sky); color:#fff;}
+  .bike-condition.bekas{background:var(--navy); color:#fff;}
+  .bike-stock-flag{
+    position:absolute; top:10px; right:10px; font-size:10px; font-weight:700; padding:.25rem .55rem;
+    border-radius:20px; background:rgba(194,74,32,.9); color:#fff;
+  }
+  .bike-body{padding:.9rem 1rem 1rem; display:flex; flex-direction:column; gap:.5rem; flex-grow:1;}
+  .bike-name{font-weight:600; font-size:14px; line-height:1.25;}
+  .bike-brand{font-size:11.5px; color:var(--muted);}
+  .bike-price{font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:15px; color:var(--navy);}
+  .bike-footer{display:flex; align-items:center; justify-content:space-between; margin-top:auto; padding-top:.5rem; border-top:1px solid var(--line);}
+  .qty-stepper-sm{display:flex; align-items:center; border:1px solid var(--line); border-radius:7px; overflow:hidden;}
+  .qty-stepper-sm button{background:var(--panel-light); border:none; width:24px; height:24px; font-size:14px; line-height:1; color:var(--ink);}
+  .qty-stepper-sm button:hover{background:var(--tint);}
+  .qty-stepper-sm button:disabled{opacity:.5; cursor:not-allowed;}
+  .qty-stepper-sm span{min-width:26px; text-align:center; font-family:'IBM Plex Mono', monospace; font-size:12px;}
+
+  .form-control:focus, .form-select:focus{box-shadow:none; border-color:var(--navy);}
+  .btn-newbike{background:var(--navy); border:none; color:#fff; font-weight:600; border-radius:8px; padding:.55rem 1.1rem; white-space:nowrap;}
+  .btn-newbike:hover{background:#16294D; color:#fff;}
+  .btn-newbike:disabled{opacity:.6; cursor:not-allowed;}
+  .modal-content{background:var(--panel); border:1px solid var(--line); border-radius:12px;}
+  .modal-header, .modal-footer{border-color:var(--line);}
+  .empty-state{padding:3rem 1rem; text-align:center; color:var(--muted); font-size:13px;}
+  .form-text-error{color:var(--rust); font-size:12px;}
+</style>
+</head>
+<body>
+
+<div class="d-flex">
+
+  <!-- Sidebar -->
+  <aside class="sidebar d-none d-lg-flex flex-column p-3">
+    <div class="d-flex align-items-center gap-2 mb-4 px-1">
+      <img src="../storage/Bike_Only.png" alt="Logo" width="75" height="50" class="d-inline-block align-text-top">
+      <div>
+        <div class="brand-name">Gehenk Bike</div>
+        <div class="brand-sub">by Cecep</div>
+      </div>
+    </div>
+
+    <div class="nav-label">Utama</div>
+    <ul class="nav nav-pills flex-column mb-2">
+      <li class="nav-item"><a class="nav-link" href="bengkel-dashboard.html"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a></li>
+      <li class="nav-item"><a class="nav-link" href="pelayanan.html"><i class="bi bi-cart-check-fill"></i> Pelayanan</a></li>
+      <li class="nav-item"><a class="nav-link" href="antrian-servis.html"><i class="bi bi-clock-history"></i> Antrian Servis</a></li>
+      <li class="nav-item"><a class="nav-link" href="pelanggan.html"><i class="bi bi-people-fill"></i> Pelanggan</a></li>
+      <li class="nav-item"><a class="nav-link" href="sparepart.html"><i class="bi bi-box-seam-fill"></i> Sparepart</a></li>
+      <li class="nav-item"><a class="nav-link active" href="sepeda.html"><i class="bi bi-bicycle"></i> Sepeda</a></li>
+      <li class="nav-item"><a class="nav-link" href="mekanik.html"><i class="bi bi-tools"></i> Mekanik</a></li>
+    </ul>
+
+    <div class="nav-label">Lainnya</div>
+    <ul class="nav nav-pills flex-column">
+      <li class="nav-item"><a class="nav-link" href="laporan.html"><i class="bi bi-bar-chart-line-fill"></i> Laporan</a></li>
+      <li class="nav-item"><a class="nav-link" href="pengaturan.html"><i class="bi bi-gear-fill"></i> Pengaturan</a></li>
+      <li class="nav-item"><a class="nav-link nav-link-logout" href="#" id="btnLogoutSidebar"><i class="bi bi-box-arrow-right"></i> Keluar</a></li>
+    </ul>
+
+    
+  </aside>
+
+  <!-- Main -->
+  <div class="flex-grow-1">
+
+    <nav class="navbar d-lg-none border-bottom" style="background:var(--navy-deep); border-color:var(--navy-deep) !important;">
+      <div class="container-fluid">
+        <button class="btn btn-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileNav" style="border:1px solid rgba(255,255,255,.2); color:#fff;">
+          <i class="bi bi-list fs-5"></i>
+        </button>
+        <span class="brand-name fs-6 mb-0" style="color:#fff;">Gehenk Bike</span>
+        <span style="width:38px;"></span>
+      </div>
+    </nav>
+    <div class="offcanvas offcanvas-start" id="mobileNav" style="background:var(--navy-deep); width:240px;">
+      <div class="offcanvas-body p-3">
+        <div class="nav-label">Utama</div>
+        <ul class="nav nav-pills flex-column mb-2">
+          <li class="nav-item"><a class="nav-link" href="bengkel-dashboard.html"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="pelayanan.html"><i class="bi bi-cart-check-fill"></i> Pelayanan</a></li>
+          <li class="nav-item"><a class="nav-link" href="antrian-servis.html"><i class="bi bi-clock-history"></i> Antrian Servis</a></li>
+          <li class="nav-item"><a class="nav-link" href="pelanggan.html"><i class="bi bi-people-fill"></i> Pelanggan</a></li>
+          <li class="nav-item"><a class="nav-link" href="sparepart.html"><i class="bi bi-box-seam-fill"></i> Sparepart</a></li>
+          <li class="nav-item"><a class="nav-link active" href="sepeda.html"><i class="bi bi-bicycle"></i> Sepeda</a></li>
+          <li class="nav-item"><a class="nav-link" href="mekanik.html"><i class="bi bi-tools"></i> Mekanik</a></li>
+        </ul>
+        <div class="nav-label">Lainnya</div>
+        <ul class="nav nav-pills flex-column">
+          <li class="nav-item"><a class="nav-link" href="laporan.html"><i class="bi bi-bar-chart-line-fill"></i> Laporan</a></li>
+          <li class="nav-item"><a class="nav-link" href="pengaturan.html"><i class="bi bi-gear-fill"></i> Pengaturan</a></li>
+          <li class="nav-item"><a class="nav-link nav-link-logout" href="#" id="btnLogoutMobile"><i class="bi bi-box-arrow-right"></i> Keluar</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <main class="p-3 p-lg-5">
+
+      <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+        <div>
+          <div class="text-navy fw-semibold small text-uppercase" style="letter-spacing:.16em; font-size:11px;">Etalase Bengkel</div>
+          <h1 class="fs-3 fw-semibold mb-0 mt-1">Sepeda</h1>
+          <div class="text-muted small mt-1">Katalog sepeda baru &amp; bekas beserta stoknya</div>
+        </div>
+        <button class="btn-newbike" data-bs-toggle="modal" data-bs-target="#modalTambahSepeda">
+          <i class="bi bi-plus-lg me-1"></i>Tambah Sepeda
+        </button>
+      </div>
+
+      <!-- Stat tags -->
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3 mb-4">
+        <div class="col">
+          <div class="tag-shape p-3 h-100">
+            <div class="tag-label">Total Sepeda</div>
+            <div class="tag-value" id="statTotal">–</div>
+            <div class="small text-muted">Unit di etalase</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="tag-shape p-3 h-100">
+            <div class="tag-label">Sepeda Baru</div>
+            <div class="tag-value text-sky" id="statBaru">–</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="tag-shape p-3 h-100">
+            <div class="tag-label">Sepeda Bekas</div>
+            <div class="tag-value text-navy" id="statBekas">–</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="tag-shape p-3 h-100">
+            <div class="tag-label">Nilai Total Etalase</div>
+            <div class="tag-value text-rust" id="statValue">–</div>
+            <div class="small text-muted">Estimasi harga jual</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter & search -->
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div class="d-flex flex-wrap gap-2" id="condFilters">
+          <button class="queue-filter active" data-cond="semua">Semua</button>
+          <button class="queue-filter" data-cond="baru">Baru</button>
+          <button class="queue-filter" data-cond="bekas">Bekas</button>
+        </div>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          <div class="form-check form-switch mb-0" style="padding-left:2.3em;">
+            <input class="form-check-input" type="checkbox" id="showHabis">
+            <label class="form-check-label small text-muted" for="showHabis">Tampilkan yang stok habis</label>
+          </div>
+          <select class="form-select form-select-sm" id="catFilter" style="width:auto;">
+            <option value="semua">Semua Kategori</option>
+            <option value="MTB">MTB</option>
+            <option value="Roadbike">Roadbike</option>
+            <option value="BMX">BMX</option>
+            <option value="Sepeda Lipat">Sepeda Lipat</option>
+            <option value="Sepeda Anak">Sepeda Anak</option>
+          </select>
+          <div class="input-group" style="max-width:220px; background:var(--panel); border:1px solid var(--line); border-radius:8px;">
+            <span class="input-group-text bg-transparent border-0"><i class="bi bi-search" style="color:var(--muted);"></i></span>
+            <input type="text" class="form-control border-0 bg-transparent" id="bikeSearch" placeholder="Cari nama/merek..." style="box-shadow:none; color:var(--ink);">
+          </div>
+        </div>
+      </div>
+
+      <!-- Bike grid -->
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-3" id="bikeGrid">
+        <div class="col-12 empty-state">Memuat data sepeda…</div>
+      </div>
+      <div class="empty-state d-none" id="bikeEmpty">
+        <i class="bi bi-bicycle fs-2 d-block mb-2"></i>Tidak ada sepeda yang cocok.
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Modal Tambah Sepeda -->
+<div class="modal fade" id="modalTambahSepeda" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fs-6" style="font-family:'Oswald',sans-serif; text-transform:uppercase;">Tambah Sepeda Baru</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label small fw-medium">Nama / Model</label>
+            <input type="text" class="form-control" id="newBikeName" placeholder="cth. Xtrada 7">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small fw-medium">Merek</label>
+            <input type="text" class="form-control" id="newBikeBrand" placeholder="cth. Polygon">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small fw-medium">Kategori</label>
+            <input type="text" class="form-control" id="newBikeCat" list="bikeCatOptions" placeholder="cth. MTB, atau kategori baru" autocomplete="off">
+            <datalist id="bikeCatOptions">
+              <option value="MTB">
+              <option value="Roadbike">
+              <option value="BMX">
+              <option value="Sepeda Lipat">
+              <option value="Sepeda Listrik">
+              <option value="Sepeda Anak">
+            </datalist>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small fw-medium">Kondisi</label>
+            <select class="form-select" id="newBikeCond">
+              <option value="baru">Baru</option>
+              <option value="bekas">Bekas</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small fw-medium">Stok Awal</label>
+            <input type="number" class="form-control" id="newBikeStock" value="1" min="0">
+          </div>
+          <div class="col-12">
+            <label class="form-label small fw-medium">Harga Jual (Rp)</label>
+            <input type="number" class="form-control" id="newBikePrice" placeholder="0" min="0" step="50000">
+          </div>
+          <div class="col-12">
+            <label class="form-label small fw-medium">Foto Sepeda (opsional)</label>
+            <input type="file" class="form-control" id="newBikeFoto" accept="image/*">
+          </div>
+        </div>
+        <div class="form-text-error d-none mt-2" id="newBikeError"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm" data-bs-dismiss="modal" style="border:1px solid var(--line); background:var(--panel);">Batal</button>
+        <button type="button" class="btn btn-sm btn-newbike" id="btnSaveBike">Simpan Sepeda</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Edit Sepeda -->
+<div class="modal fade" id="modalEditSepeda" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fs-6" style="font-family:'Oswald',sans-serif; text-transform:uppercase;">Edit Sepeda</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editBikeId">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label small fw-medium">Nama / Model</label>
+            <input type="text" class="form-control" id="editBikeName">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small fw-medium">Merek</label>
+            <input type="text" class="form-control" id="editBikeBrand">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small fw-medium">Kategori</label>
+            <input type="text" class="form-control" id="editBikeCat" list="bikeCatOptions" autocomplete="off">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small fw-medium">Kondisi</label>
+            <select class="form-select" id="editBikeCond">
+              <option value="baru">Baru</option>
+              <option value="bekas">Bekas</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small fw-medium">Harga Jual (Rp)</label>
+            <input type="number" class="form-control" id="editBikePrice" min="0" step="50000">
+          </div>
+          <div class="col-12">
+            <label class="form-label small fw-medium">Foto Sepeda</label>
+            <div class="d-flex align-items-center gap-3 mb-2">
+              <img id="editBikeFotoPreview" src="" alt="" style="width:64px; height:64px; object-fit:cover; border-radius:8px; border:1px solid var(--line); display:none;">
+              <span class="small text-muted" id="editBikeFotoKosong">Belum ada foto.</span>
+            </div>
+            <input type="file" class="form-control" id="editBikeFoto" accept="image/*">
+            <div class="form-text-hint mt-1">Kosongkan kalau tidak mau ganti foto.</div>
+          </div>
+        </div>
+        <div class="form-text-error d-none mt-2" id="editBikeError"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm" data-bs-dismiss="modal" style="border:1px solid var(--line); background:var(--panel);">Batal</button>
+        <button type="button" class="btn btn-sm btn-newbike" id="btnUpdateBike">Simpan Perubahan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script>
+  const API_BASE = '';
+
+  /* ---------- Logout ---------- */
+  async function handleLogout(btn){
+    if(!confirm('Yakin ingin keluar dari akun ini?')) return;
+    if(btn){ btn.disabled = true; }
+    try {
+      await fetch('/api/logout', { method: 'POST', headers: { Accept: 'application/json' } });
+    } catch (err) {
+      // tetap arahkan ke login walau logout API gagal, supaya tidak terjebak di halaman admin
+    } finally {
+      window.location.href = 'login.html';
+    }
+  }
+  ['btnLogoutSidebar', 'btnLogoutMobile'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.addEventListener('click', (e) => { e.preventDefault(); handleLogout(el); });
+  });
+
+  /* Batasi akses mekanik: hanya boleh Pelayanan & Antrian Servis (buat/kerjakan tiket, pakai sparepart) */
+  (async function guardAksesMekanik(){
+    const HALAMAN_TERLARANG = ['bengkel-dashboard.html','pelanggan.html','sparepart.html','sepeda.html','mekanik.html','laporan.html','pengaturan.html'];
+    try {
+      const res = await fetch('/api/me', { headers: { Accept: 'application/json' } });
+      const { data } = await res.json();
+      if (!data || data.job !== 'mekanik') return;
+
+      const halamanIni = location.pathname.split('/').pop();
+      if (HALAMAN_TERLARANG.includes(halamanIni)) { location.href = 'pelayanan.html'; return; }
+
+      document.querySelectorAll('.sidebar a.nav-link, .offcanvas a.nav-link').forEach(a => {
+        if (HALAMAN_TERLARANG.includes(a.getAttribute('href'))) a.closest('li')?.classList.add('d-none');
+      });
+    } catch (err) { /* kalau /api/me gagal, biarkan halaman tampil normal */ }
+  })();
+
+  function formatRupiah(n){ return 'Rp ' + Number(n || 0).toLocaleString('id-ID'); }
+  function capitalize(s){ return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+
+  async function fetchJson(path, options){
+    const res = await fetch(`${API_BASE}${path}`, {
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      ...options,
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const err = new Error(body.message || (body.errors && Object.values(body.errors)[0][0]) || `Gagal memanggil ${path} (${res.status})`);
+      err.body = body;
+      throw err;
+    }
+    return body;
+  }
+
+  const catIcon = {
+    'MTB':'bi-bicycle', 'Roadbike':'bi-bicycle', 'BMX':'bi-bicycle',
+    'Sepeda Lipat':'bi-bicycle', 'Sepeda Listrik':'bi-lightning-charge-fill', 'Sepeda Anak':'bi-bicycle'
+  };
+
+  let bikes = [];
+
+  const bikeGrid = document.getElementById('bikeGrid');
+  const bikeEmpty = document.getElementById('bikeEmpty');
+  const condFilters = document.querySelectorAll('#condFilters .queue-filter');
+  const catFilter = document.getElementById('catFilter');
+  const bikeCatOptions = document.getElementById('bikeCatOptions');
+  const bikeSearch = document.getElementById('bikeSearch');
+  const showHabis = document.getElementById('showHabis');
+  let activeCond = 'semua';
+
+  /* Sinkronkan pilihan kategori (filter atas & datalist form) dengan kategori
+     yang sudah ada di database — termasuk kategori custom yang diketik sendiri. */
+  function syncKategoriOptions(){
+    const existing = new Set(Array.from(catFilter.options).map(o => o.value).filter(v => v !== 'semua'));
+    const semuaKategori = [...new Set(bikes.map(b => b.kategori).filter(Boolean))];
+
+    semuaKategori.forEach(kat => {
+      if(!existing.has(kat)){
+        const opt = document.createElement('option');
+        opt.value = kat;
+        opt.textContent = kat;
+        catFilter.appendChild(opt);
+        existing.add(kat);
+      }
+      if(!Array.from(bikeCatOptions.options).some(o => o.value === kat)){
+        const dOpt = document.createElement('option');
+        dOpt.value = kat;
+        bikeCatOptions.appendChild(dOpt);
+      }
+    });
+  }
+
+  function renderBikes(){
+    if(!bikes.length){
+      bikeGrid.innerHTML = '';
+      bikeEmpty.classList.remove('d-none');
+      bikeEmpty.innerHTML = '<i class="bi bi-bicycle fs-2 d-block mb-2"></i>Belum ada sepeda di etalase. Klik "Tambah Sepeda" untuk mulai.';
+      updateStats();
+      return;
+    }
+
+    const cat = catFilter.value;
+    const query = bikeSearch.value.trim().toLowerCase();
+    const filtered = bikes.filter(b => {
+      if(!showHabis.checked && b.stok <= 0) return false; // stok habis: langsung hilang dari daftar, bukan ditampilkan "Stok 0"
+      if(activeCond !== 'semua' && b.kondisi !== activeCond) return false;
+      if(cat !== 'semua' && b.kategori !== cat) return false;
+      if(query && !(b.nama + ' ' + b.merek).toLowerCase().includes(query)) return false;
+      return true;
+    });
+
+    bikeEmpty.classList.toggle('d-none', filtered.length > 0);
+    bikeEmpty.innerHTML = '<i class="bi bi-bicycle fs-2 d-block mb-2"></i>Tidak ada sepeda yang cocok.';
+
+    bikeGrid.innerHTML = filtered.map(b => `
+      <div class="col">
+        <div class="bike-card">
+          <div class="bike-display">
+            <span class="bike-condition ${b.kondisi}">${capitalize(b.kondisi)}</span>
+            ${b.stok === 0 ? '<span class="bike-stock-flag">Stok Habis</span>' : ''}
+            ${b.foto_url ? `<img src="${b.foto_url}" alt="${b.nama}" style="width:100%; height:100%; object-fit:cover;">` : `<i class="bi ${catIcon[b.kategori] || 'bi-bicycle'}"></i>`}
+            <button type="button" class="bike-del-btn" data-del="${b.id}" data-nama="${b.merek} ${b.nama}" title="Hapus sepeda"><i class="bi bi-trash3" style="font-size: small;"></i></button>
+            <button type="button" class="bike-edit-btn" data-edit="${b.id}" title="Edit sepeda"><i class="bi bi-pencil-fill " style="font-size: small;"></i></button>
+          </div>
+          <div class="bike-body">
+            <div>
+              <div class="bike-name">${b.merek} ${b.nama}</div>
+              <div class="bike-brand"><span class="badge rounded-pill badge-cat" style="font-size:10px;">${b.kategori}</span></div>
+            </div>
+            <div class="bike-price">${formatRupiah(b.harga)}</div>
+            <div class="bike-footer">
+              <span class="small text-muted">Stok: <strong class="mono">${b.stok}</strong></span>
+              <div class="qty-stepper-sm">
+                <button type="button" data-act="minus" data-id="${b.id}" ${b.stok <= 0 ? 'disabled' : ''}>−</button>
+                <span>${b.stok}</span>
+                <button type="button" data-act="plus" data-id="${b.id}">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    updateStats();
+  }
+
+  function updateStats(){
+    document.getElementById('statTotal').textContent = bikes.length;
+    document.getElementById('statBaru').textContent = bikes.filter(b => b.kondisi === 'baru').length;
+    document.getElementById('statBekas').textContent = bikes.filter(b => b.kondisi === 'bekas').length;
+    const totalValue = bikes.reduce((sum, b) => sum + b.harga * b.stok, 0);
+    document.getElementById('statValue').textContent = formatRupiah(totalValue);
+  }
+
+  async function loadBikes(){
+    try {
+      const { data } = await fetchJson('/api/sepeda');
+      bikes = data || [];
+      syncKategoriOptions();
+      renderBikes();
+    } catch (err) {
+      bikeGrid.innerHTML = '<div class="col-12 empty-state">Gagal memuat data sepeda.</div>';
+    }
+  }
+
+  bikeGrid.addEventListener('click', async (e) => {
+    const delBtn = e.target.closest('button[data-del]');
+    if(delBtn){
+      if(!confirm(`Hapus sepeda "${delBtn.dataset.nama}"? Tindakan ini tidak bisa dibatalkan.`)) return;
+      delBtn.disabled = true;
+      try {
+        await fetchJson(`/api/sepeda/${delBtn.dataset.del}`, { method: 'DELETE' });
+        bikes = bikes.filter(b => b.id !== parseInt(delBtn.dataset.del, 10));
+        renderBikes();
+      } catch (err) {
+        alert(err.message || 'Gagal menghapus sepeda.');
+        delBtn.disabled = false;
+      }
+      return;
+    }
+
+    const editBtn = e.target.closest('button[data-edit]');
+    if(editBtn){
+      const bike = bikes.find(b => b.id === parseInt(editBtn.dataset.edit, 10));
+      if(!bike) return;
+      document.getElementById('editBikeId').value = bike.id;
+      document.getElementById('editBikeName').value = bike.nama;
+      document.getElementById('editBikeBrand').value = bike.merek;
+      document.getElementById('editBikeCat').value = bike.kategori;
+      document.getElementById('editBikeCond').value = bike.kondisi;
+      document.getElementById('editBikePrice').value = bike.harga;
+      document.getElementById('editBikeFoto').value = '';
+      const preview = document.getElementById('editBikeFotoPreview');
+      const kosong = document.getElementById('editBikeFotoKosong');
+      if(bike.foto_url){
+        preview.src = bike.foto_url;
+        preview.style.display = '';
+        kosong.style.display = 'none';
+      } else {
+        preview.style.display = 'none';
+        kosong.style.display = '';
+      }
+      document.getElementById('editBikeError').classList.add('d-none');
+      new bootstrap.Modal(document.getElementById('modalEditSepeda')).show();
+      return;
+    }
+
+    const btn = e.target.closest('button[data-act]');
+    if(!btn || btn.disabled) return;
+    const id = parseInt(btn.dataset.id, 10);
+    const bike = bikes.find(b => b.id === id);
+    if(!bike) return;
+    const perubahan = btn.dataset.act === 'plus' ? 1 : -1;
+
+    btn.disabled = true;
+    try {
+      const { data } = await fetchJson(`/api/sepeda/${id}/stok`, {
+        method: 'PATCH',
+        body: JSON.stringify({ perubahan }),
+      });
+      bike.stok = data.stok;
+      renderBikes();
+    } catch (err) {
+      alert(err.message || 'Gagal mengubah stok.');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  const editBikeError = document.getElementById('editBikeError');
+  const btnUpdateBike = document.getElementById('btnUpdateBike');
+
+  btnUpdateBike.addEventListener('click', async () => {
+    const id = document.getElementById('editBikeId').value;
+    const nama = document.getElementById('editBikeName').value.trim();
+    const merek = document.getElementById('editBikeBrand').value.trim();
+    const kategori = document.getElementById('editBikeCat').value.trim();
+    const kondisi = document.getElementById('editBikeCond').value;
+    const harga = parseInt(document.getElementById('editBikePrice').value, 10) || 0;
+
+    editBikeError.classList.add('d-none');
+    if(!nama || !merek || !kategori){
+      editBikeError.textContent = 'Nama, merek, dan kategori wajib diisi.';
+      editBikeError.classList.remove('d-none');
+      return;
+    }
+
+    btnUpdateBike.disabled = true;
+    btnUpdateBike.textContent = 'Menyimpan…';
+
+    try {
+      const formData = new FormData();
+      formData.append('_method', 'PUT'); // method spoofing: PUT asli tidak bisa bawa file lewat FormData
+      formData.append('nama', nama);
+      formData.append('merek', merek);
+      formData.append('kategori', kategori);
+      formData.append('kondisi', kondisi);
+      formData.append('harga', harga);
+      const fotoFile = document.getElementById('editBikeFoto').files[0];
+      if (fotoFile) formData.append('foto', fotoFile);
+
+      const { data } = await fetchJson(`/api/sepeda/${id}`, {
+        method: 'POST',
+        body: formData,
+        headers: { 'Accept': 'application/json' },
+      });
+
+      const idx = bikes.findIndex(b => b.id === parseInt(id, 10));
+      if(idx !== -1) bikes[idx] = data;
+      syncKategoriOptions();
+      renderBikes();
+      bootstrap.Modal.getInstance(document.getElementById('modalEditSepeda')).hide();
+    } catch (err) {
+      editBikeError.textContent = err.message || 'Gagal menyimpan perubahan.';
+      editBikeError.classList.remove('d-none');
+    } finally {
+      btnUpdateBike.disabled = false;
+      btnUpdateBike.textContent = 'Simpan Perubahan';
+    }
+  });
+
+  condFilters.forEach(btn => {
+    btn.addEventListener('click', () => {
+      condFilters.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeCond = btn.dataset.cond;
+      renderBikes();
+    });
+  });
+  catFilter.addEventListener('change', renderBikes);
+  bikeSearch.addEventListener('input', renderBikes);
+  showHabis.addEventListener('change', renderBikes);
+
+  const newBikeError = document.getElementById('newBikeError');
+  const btnSaveBike = document.getElementById('btnSaveBike');
+
+  btnSaveBike.addEventListener('click', async () => {
+    const nama = document.getElementById('newBikeName').value.trim();
+    const merek = document.getElementById('newBikeBrand').value.trim();
+    const kategori = document.getElementById('newBikeCat').value.trim();
+    const kondisi = document.getElementById('newBikeCond').value;
+    const stok = parseInt(document.getElementById('newBikeStock').value, 10) || 0;
+    const harga = parseInt(document.getElementById('newBikePrice').value, 10) || 0;
+
+    newBikeError.classList.add('d-none');
+    if(!nama || !merek || !kategori){
+      newBikeError.textContent = 'Nama, merek, dan kategori wajib diisi.';
+      newBikeError.classList.remove('d-none');
+      return;
+    }
+
+    btnSaveBike.disabled = true;
+    btnSaveBike.textContent = 'Menyimpan…';
+
+    try {
+      const formData = new FormData();
+      formData.append('nama', nama);
+      formData.append('merek', merek);
+      formData.append('kategori', kategori);
+      formData.append('kondisi', kondisi);
+      formData.append('harga', harga);
+      formData.append('stok', stok);
+      const fotoFile = document.getElementById('newBikeFoto').files[0];
+      if (fotoFile) formData.append('foto', fotoFile);
+
+      await fetchJson('/api/sepeda', {
+        method: 'POST',
+        body: formData,
+        headers: { 'Accept': 'application/json' }, // tanpa Content-Type, biar browser set boundary multipart sendiri
+      });
+
+      document.getElementById('newBikeName').value = '';
+      document.getElementById('newBikeBrand').value = '';
+      document.getElementById('newBikeCat').value = '';
+      document.getElementById('newBikeStock').value = 1;
+      document.getElementById('newBikePrice').value = '';
+      document.getElementById('newBikeFoto').value = '';
+
+      await loadBikes();
+      bootstrap.Modal.getInstance(document.getElementById('modalTambahSepeda')).hide();
+    } catch (err) {
+      newBikeError.textContent = err.message || 'Gagal menyimpan sepeda.';
+      newBikeError.classList.remove('d-none');
+    } finally {
+      btnSaveBike.disabled = false;
+      btnSaveBike.textContent = 'Simpan Sepeda';
+    }
+  });
+
+  loadBikes();
+</script>
+</body>
+</html>

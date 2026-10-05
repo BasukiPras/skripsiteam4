@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<script src="../mock-api.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gehenk Bike — Laporan</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EEF1F7;
+    --panel:#FFFFFF;
+    --panel-light:#E7EBF3;
+    --tint:#E3E8F4;
+    --ink:#131B2E;
+    --muted:#68708A;
+    --navy:#1E3A70;
+    --navy-deep:#0E1F3F;
+    --sky:#2F6FA6;
+    --rust:#C24A20;
+    --line:#DDE3EF;
+  }
+  body{background:var(--bg); color:var(--ink); font-family:'Inter', sans-serif;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  .display, h1, h2, h3, .navbar-brand, .brand-name{font-family:'Oswald', sans-serif; text-transform:uppercase; letter-spacing:.02em;}
+
+  /* sidebar */
+  .sidebar{width:240px; min-height:100vh; background:var(--navy-deep); border-right:1px solid rgba(255,255,255,.06); flex-shrink:0;}
+  .brand-mark{width:34px; height:34px; border-radius:50%; border:3px solid var(--sky); display:flex; align-items:center; justify-content:center; position:relative;}
+  .brand-mark::after{content:''; width:4px; height:4px; background:var(--sky); border-radius:50%;}
+  .brand-name{font-size:16px; font-weight:600; line-height:1.1; color:#fff;}
+  .brand-sub{font-size:10px; color:rgba(255,255,255,.5); letter-spacing:.12em; text-transform:uppercase;}
+  .nav-label{font-size:10.5px; color:rgba(255,255,255,.35); text-transform:uppercase; letter-spacing:.14em; margin:16px 0 6px 12px;}
+  .sidebar .nav-link{color:rgba(255,255,255,.72); font-size:13.5px; font-weight:500; border-radius:8px; display:flex; align-items:center; gap:12px; padding:.6rem .75rem;}
+  .sidebar .nav-link i{font-size:1rem; opacity:.8; width:18px; text-align:center;}
+  .sidebar .nav-link:hover{background:rgba(255,255,255,.06); color:#fff;}
+  .sidebar .nav-link.active{background:rgba(255,255,255,.08); color:#fff; box-shadow:inset 3px 0 0 var(--sky);}
+  .sidebar .nav-link.active i{opacity:1;}
+  .sidebar-foot{background:rgba(255,255,255,.06); border:1px dashed rgba(255,255,255,.15); border-radius:10px; padding:.6rem .75rem; color:rgba(255,255,255,.75);}
+  .dot{width:7px; height:7px; border-radius:50%; background:var(--sky); display:inline-block;}
+  .nav-link-logout {
+  color: rgba(255, 140, 120, .85) !important;
+}
+
+.nav-link-logout:hover {
+  background: rgba(194, 74, 32, .18) !important; /* Latar merah muda saat hover */
+  color: #fff !important;
+}
+
+.nav-link-logout i {
+  opacity: 1; /* Ikon panah logout selalu jelas */
+}
+  .tag-shape{position:relative; background:var(--tint); border:1px solid var(--line); border-radius:4px 10px 10px 4px; padding-left:1.9rem !important; box-shadow:0 1px 2px rgba(19,27,46,.06);}
+  .tag-shape::before{content:''; position:absolute; left:12px; top:50%; transform:translateY(-50%); width:8px; height:8px; border-radius:50%; background:var(--bg); border:1px solid var(--line);}
+  .tag-shape::after{content:''; position:absolute; left:-1px; top:50%; transform:translateY(-50%); width:10px; height:20px; background:var(--bg); border-radius:0 10px 10px 0;}
+  .tag-label{font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; font-weight:600;}
+  .tag-value{font-family:'IBM Plex Mono', monospace; font-size:22px; font-weight:600;}
+  .text-navy{color:var(--navy) !important;}
+  .text-sky{color:var(--sky) !important;}
+  .text-rust{color:var(--rust) !important;}
+  .card{border-color:var(--line);}
+  .panel{background:var(--panel); border:1px solid var(--line); border-radius:10px;}
+
+  .period-filter{border:1px solid var(--line); border-radius:8px; color:var(--muted); font-weight:600; font-size:13px; padding:.5rem 1rem; background:var(--panel); cursor:pointer;}
+  .period-filter.active{background:var(--ink); color:var(--tint); border-color:var(--ink);}
+  .btn-export{border:1px solid var(--line); border-radius:8px; font-size:12.5px; font-weight:600; padding:.5rem .9rem; background:var(--panel); color:var(--ink);}
+  .btn-export:hover{background:var(--tint); border-color:var(--navy);}
+
+  .chart-wrap{display:flex; align-items:flex-end; gap:10px; height:170px; padding:0 4px;}
+  .bar-col{flex:1; display:flex; flex-direction:column; align-items:center; gap:8px; height:100%; justify-content:flex-end;}
+  .bar{width:100%; max-width:34px; border-radius:4px 4px 2px 2px; background:linear-gradient(180deg, #3E5C93, var(--navy)); transition:height .3s;}
+  .bar.peak{background:linear-gradient(180deg, #4C7FC2, var(--sky));}
+
+  .rank-row{display:flex; align-items:center; gap:.75rem; padding:.65rem 0; border-bottom:1px solid var(--line);}
+  .rank-row:last-child{border-bottom:none;}
+  .rank-num{
+    width:22px; height:22px; border-radius:50%; background:var(--panel-light); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600; flex-shrink:0;
+  }
+  .rank-title{font-size:13px; font-weight:600;}
+  .rank-sub{font-size:11px; color:var(--muted);}
+  .rank-track{height:4px; background:var(--panel-light); border-radius:3px; margin-top:5px; overflow:hidden;}
+  .rank-fill{height:100%; border-radius:3px;}
+  .rank-value{font-family:'IBM Plex Mono', monospace; font-size:12.5px; font-weight:600; white-space:nowrap;}
+
+  .mekanik-table thead th{
+    font-family:'Oswald', sans-serif; font-size:10.5px; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--muted); font-weight:600; border-bottom:2px solid var(--line); padding:.7rem .5rem;
+  }
+  .mekanik-table tbody td{padding:.65rem .5rem; vertical-align:middle; border-bottom:1px solid var(--line); font-size:13px;}
+  .mekanik-table tbody tr:last-child td{border-bottom:none;}
+  .avatar-sm2{
+    width:26px; height:26px; border-radius:50%; background:var(--panel-light); border:1.5px solid var(--sky);
+    display:flex; align-items:center; justify-content:center; font-family:'Oswald',sans-serif; font-size:10px; font-weight:600;
+  }
+  .empty-state{color:var(--muted); font-size:12.5px; text-align:center; padding:1.25rem .5rem;}
+  .section-note{font-size:11px; color:var(--muted); font-style:italic; margin-top:.4rem;}
+</style>
+</head>
+<body>
+
+<div class="d-flex">
+
+  <!-- Sidebar -->
+  <aside class="sidebar d-none d-lg-flex flex-column p-3">
+    <div class="d-flex align-items-center gap-2 mb-4 px-1">
+      <img src="../storage/Bike_Only.png" alt="Logo" width="75" height="50" class="d-inline-block align-text-top">
+      <div>
+        <div class="brand-name">Gehenk Bike</div>
+        <div class="brand-sub">by Cecep</div>
+      </div>
+    </div>
+
+    <div class="nav-label">Utama</div>
+    <ul class="nav nav-pills flex-column mb-2">
+      <li class="nav-item"><a class="nav-link" href="bengkel-dashboard.html"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a></li>
+      <li class="nav-item"><a class="nav-link" href="pelayanan.html"><i class="bi bi-cart-check-fill"></i> Pelayanan</a></li>
+      <li class="nav-item"><a class="nav-link" href="antrian-servis.html"><i class="bi bi-clock-history"></i> Antrian Servis</a></li>
+      <li class="nav-item"><a class="nav-link" href="pelanggan.html"><i class="bi bi-people-fill"></i> Pelanggan</a></li>
+      <li class="nav-item"><a class="nav-link" href="sparepart.html"><i class="bi bi-box-seam-fill"></i> Sparepart</a></li>
+      <li class="nav-item"><a class="nav-link" href="sepeda.html"><i class="bi bi-bicycle"></i> Sepeda</a></li>
+      <li class="nav-item"><a class="nav-link" href="mekanik.html"><i class="bi bi-tools"></i> Mekanik</a></li>
+    </ul>
+
+    <div class="nav-label">Lainnya</div>
+    <ul class="nav nav-pills flex-column">
+      <li class="nav-item"><a class="nav-link active" href="laporan.html"><i class="bi bi-bar-chart-line-fill"></i> Laporan</a></li>
+      <li class="nav-item"><a class="nav-link" href="pengaturan.html"><i class="bi bi-gear-fill"></i> Pengaturan</a></li>
+      <li class="nav-item"><a class="nav-link nav-link-logout" href="#" id="btnLogoutSidebar"><i class="bi bi-box-arrow-right"></i> Keluar</a></li>
+    </ul>
+
+    
+  </aside>
+
+  <!-- Main -->
+  <div class="flex-grow-1">
+
+    <nav class="navbar d-lg-none border-bottom" style="background:var(--navy-deep); border-color:var(--navy-deep) !important;">
+      <div class="container-fluid">
+        <button class="btn btn-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileNav" style="border:1px solid rgba(255,255,255,.2); color:#fff;">
+          <i class="bi bi-list fs-5"></i>
+        </button>
+        <span class="brand-name fs-6 mb-0" style="color:#fff;">Gehenk Bike</span>
+        <span style="width:38px;"></span>
+      </div>
+    </nav>
+    <div class="offcanvas offcanvas-start" id="mobileNav" style="background:var(--navy-deep); width:240px;">
+      <div class="offcanvas-body p-3">
+        <div class="nav-label">Utama</div>
+        <ul class="nav nav-pills flex-column mb-2">
+          <li class="nav-item"><a class="nav-link" href="bengkel-dashboard.html"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="pelayanan.html"><i class="bi bi-cart-check-fill"></i> Pelayanan</a></li>
+          <li class="nav-item"><a class="nav-link" href="antrian-servis.html"><i class="bi bi-clock-history"></i> Antrian Servis</a></li>
+          <li class="nav-item"><a class="nav-link" href="pelanggan.html"><i class="bi bi-people-fill"></i> Pelanggan</a></li>
+          <li class="nav-item"><a class="nav-link" href="sparepart.html"><i class="bi bi-box-seam-fill"></i> Sparepart</a></li>
+          <li class="nav-item"><a class="nav-link" href="sepeda.html"><i class="bi bi-bicycle"></i> Sepeda</a></li>
+          <li class="nav-item"><a class="nav-link" href="mekanik.html"><i class="bi bi-tools"></i> Mekanik</a></li>
+        </ul>
+        <div class="nav-label">Lainnya</div>
+        <ul class="nav nav-pills flex-column">
+          <li class="nav-item"><a class="nav-link active" href="laporan.html"><i class="bi bi-bar-chart-line-fill"></i> Laporan</a></li>
+          <li class="nav-item"><a class="nav-link" href="pengaturan.html"><i class="bi bi-gear-fill"></i> Pengaturan</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <main class="p-3 p-lg-5">
+
+      <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+        <div>
+          <div class="text-navy fw-semibold small text-uppercase" style="letter-spacing:.16em; font-size:11px;">Ringkasan Bisnis</div>
+          <h1 class="fs-3 fw-semibold mb-0 mt-1">Laporan</h1>
+          <div class="text-muted small mt-1">Pantau performa pendapatan, layanan, dan tim bengkel</div>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn-export" id="btnPrint"><i class="bi bi-printer me-1"></i>Cetak Laporan</button>
+        </div>
+      </div>
+
+      <!-- Period filter -->
+      <div class="d-flex flex-wrap gap-2 mb-4" id="periodFilters">
+        <button class="period-filter" data-period="minggu">Minggu Ini</button>
+        <button class="period-filter active" data-period="bulan">Bulan Ini</button>
+        <button class="period-filter" data-period="tahun">Tahun Ini</button>
+      </div>
+
+      <!-- Stat tags -->
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3 mb-4">
+        <div class="col">
+          <div class="tag-shape p-3 h-100">
+            <div class="tag-label">Total Pendapatan</div>
+            <div class="tag-value text-navy" id="statPendapatan">Rp 0</div>
+            <div class="small text-muted" id="statPendapatanSub">—</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="tag-shape p-3 h-100">
+            <div class="tag-label">Total Transaksi</div>
+            <div class="tag-value" id="statTransaksi">0</div>
+            <div class="small text-muted">Servis &amp; penjualan barang</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="tag-shape p-3 h-100">
+            <div class="tag-label">Tiket Selesai</div>
+            <div class="tag-value text-sky" id="statTiket">0</div>
+            <div class="small text-muted">Servis rampung dikerjakan</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="tag-shape p-3 h-100">
+            <div class="tag-label">Pelanggan Baru</div>
+            <div class="tag-value text-rust" id="statPelanggan">0</div>
+            <div class="small text-muted">Bergabung di periode ini</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Revenue chart -->
+      <div class="panel p-3 p-lg-4 mb-4">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+          <h2 class="fs-6 mb-0">Tren Pendapatan</h2>
+          <span class="small text-muted" id="chartPeriodLabel">—</span>
+        </div>
+        <div class="chart-wrap" id="revenueChart"></div>
+      </div>
+
+      <!-- Sepeda terbanyak diservis & Sparepart terlaris -->
+      <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+          <div class="panel p-3 h-100">
+            <h2 class="fs-6 mb-3">Sepeda Paling Sering Diservis</h2>
+            <div id="rankJenisSepeda"><div class="empty-state">Memuat data…</div></div>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="panel p-3 h-100">
+            <h2 class="fs-6 mb-3">Sparepart Terlaris</h2>
+            <div id="rankSparepart"><div class="empty-state">Memuat data…</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Performa mekanik & pelanggan teratas -->
+      <div class="row g-4">
+        <div class="col-lg-7">
+          <div class="panel p-3 h-100">
+            <h2 class="fs-6 mb-3">Performa Mekanik</h2>
+            <div class="table-responsive">
+              <table class="table mb-0 mekanik-table">
+                <thead>
+                  <tr>
+                    <th>Mekanik</th>
+                    <th class="text-center">Servis</th>
+                    <th>Pendapatan</th>
+                  </tr>
+                </thead>
+                <tbody id="mekanikPerformaBody">
+                  <tr><td colspan="3" class="empty-state">Memuat data…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="panel p-3 h-100">
+            <h2 class="fs-6 mb-3">Pelanggan Teratas</h2>
+            <div id="rankPelanggan"><div class="empty-state">Memuat data…</div></div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script>
+  const API_BASE = '';
+
+  /* ---------- Logout ---------- */
+  async function handleLogout(btn){
+    if(!confirm('Yakin ingin keluar dari akun ini?')) return;
+    if(btn){ btn.disabled = true; }
+    try {
+      await fetch('/api/logout', { method: 'POST', headers: { Accept: 'application/json' } });
+    } catch (err) {
+      // tetap arahkan ke login walau logout API gagal, supaya tidak terjebak di halaman admin
+    } finally {
+      window.location.href = 'login.html';
+    }
+  }
+  ['btnLogoutSidebar', 'btnLogoutMobile'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.addEventListener('click', (e) => { e.preventDefault(); handleLogout(el); });
+  });
+
+  function formatRupiah(n){ return 'Rp ' + Number(n || 0).toLocaleString('id-ID'); }
+  function initial(name){
+    if (!name) return '?';
+    return name.trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+  }
+
+  async function fetchJson(path){
+    const res = await fetch(`${API_BASE}${path}`, { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) throw new Error(`Gagal memuat ${path} (${res.status})`);
+    return res.json();
+  }
+
+  async function fetchAllPages(path, maxPages = 20){
+    let page = 1, all = [], lastPage = 1;
+    do {
+      const sep = path.includes('?') ? '&' : '?';
+      const res = await fetchJson(`${path}${sep}page=${page}`);
+      all = all.concat(res.data || []);
+      lastPage = res.last_page || 1;
+      page++;
+    } while (page <= lastPage && page <= maxPages);
+    return all;
+  }
+
+  /* ---------- Data mentah dari server (dimuat sekali) ---------- */
+  let tikets = [];
+  let transaksiList = [];
+  let pelangganList = [];
+  let mekanikList = [];
+  let sparepartById = {};
+
+  async function loadAllData(){
+    const [tikRes, trxRes, plRes, mkRes, spRes] = await Promise.allSettled([
+      fetchJson('/api/tiket-servis'),
+      fetchAllPages('/api/transaksi'),
+      fetchAllPages('/api/pelanggan'),
+      fetchJson('/api/users?job=mekanik'),
+      fetchJson('/api/sparepart'),
+    ]);
+
+    tikets = tikRes.status === 'fulfilled' ? (tikRes.value.data || []) : [];
+    transaksiList = trxRes.status === 'fulfilled' ? trxRes.value : [];
+    pelangganList = plRes.status === 'fulfilled' ? plRes.value : [];
+    mekanikList = mkRes.status === 'fulfilled' ? (mkRes.value.data || []) : [];
+
+    sparepartById = {};
+    if(spRes.status === 'fulfilled'){
+      (spRes.value.data || []).forEach(sp => { sparepartById[sp.id] = sp; });
+    }
+  }
+
+  /* ---------- Definisi periode ---------- */
+  function periodRange(key){
+    const now = new Date();
+    if(key === 'minggu'){
+      const start = new Date(now); start.setDate(start.getDate() - 6); start.setHours(0,0,0,0);
+      const labels = [];
+      for(let i = 0; i < 7; i++){
+        const d = new Date(start); d.setDate(start.getDate() + i);
+        labels.push(d.toLocaleDateString('id-ID', { weekday: 'short' }));
+      }
+      return {
+        start, end: now, buckets: 7, labels,
+        bucketOf: (d) => Math.min(6, Math.max(0, Math.floor((d - start) / 86400000))),
+        chartLabel: '7 hari terakhir',
+      };
+    }
+    if(key === 'bulan'){
+      const start = new Date(now.getFullYear(), now.getMonth(), 1);
+      const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      const buckets = Math.ceil(lastDay / 7);
+      const labels = Array.from({ length: buckets }, (_, i) => `Minggu ${i + 1}`);
+      return {
+        start, end: now, buckets, labels,
+        bucketOf: (d) => Math.min(buckets - 1, Math.floor((d.getDate() - 1) / 7)),
+        chartLabel: 'Per minggu — ' + now.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }),
+      };
+    }
+    // tahun
+    const start = new Date(now.getFullYear(), 0, 1);
+    const labels = Array.from({ length: 12 }, (_, i) => new Date(now.getFullYear(), i, 1).toLocaleDateString('id-ID', { month: 'short' }));
+    return {
+      start, end: now, buckets: 12, labels,
+      bucketOf: (d) => d.getMonth(),
+      chartLabel: 'Per bulan — ' + now.getFullYear(),
+    };
+  }
+
+  function inRange(dateStr, start, end){
+    if(!dateStr) return false;
+    const d = new Date(dateStr);
+    return d >= start && d <= end;
+  }
+
+  /* ---------- Render per periode ---------- */
+  function renderPeriod(key){
+    const range = periodRange(key);
+    document.getElementById('chartPeriodLabel').textContent = range.chartLabel;
+
+    const tiketInRange = tikets.filter(t => inRange(t.tanggal_masuk, range.start, range.end));
+    const tiketSelesaiInRange = tikets.filter(t => (t.status === 'selesai' || t.status === 'sudah_diambil') && inRange(t.tanggal_selesai, range.start, range.end));
+    const transaksiInRange = transaksiList.filter(tr => inRange(tr.tanggal, range.start, range.end));
+    const pelangganBaruInRange = pelangganList.filter(p => inRange(p.created_at, range.start, range.end));
+
+    /* Stat cards */
+    const totalPendapatan = tiketInRange.reduce((s, t) => s + Number(t.total_biaya || 0), 0)
+      + transaksiInRange.reduce((s, tr) => s + Number(tr.total || 0), 0);
+    document.getElementById('statPendapatan').textContent = formatRupiah(totalPendapatan);
+    document.getElementById('statPendapatanSub').textContent = `Dari ${tiketInRange.length} tiket servis & ${transaksiInRange.length} transaksi`;
+    document.getElementById('statTransaksi').textContent = tiketInRange.length + transaksiInRange.length;
+    document.getElementById('statTiket').textContent = tiketSelesaiInRange.length;
+    document.getElementById('statPelanggan').textContent = pelangganBaruInRange.length;
+
+    /* Revenue chart */
+    const values = Array(range.buckets).fill(0);
+    tiketInRange.forEach(t => { values[range.bucketOf(new Date(t.tanggal_masuk))] += Number(t.total_biaya || 0); });
+    transaksiInRange.forEach(tr => { values[range.bucketOf(new Date(tr.tanggal))] += Number(tr.total || 0); });
+
+    const maxVal = Math.max(...values, 1);
+    const chart = document.getElementById('revenueChart');
+    if(totalPendapatan === 0){
+      chart.innerHTML = '<div class="empty-state w-100">Belum ada pendapatan di periode ini.</div>';
+    } else {
+      chart.innerHTML = values.map((v, i) => {
+        const pct = Math.max(3, Math.round((v / maxVal) * 100));
+        const isPeak = v === maxVal && v > 0;
+        return `<div class="bar-col"><div class="bar ${isPeak ? 'peak' : ''}" style="height:${pct}%"></div><span class="small text-muted text-uppercase" style="font-size:10px;">${range.labels[i]}</span></div>`;
+      }).join('');
+    }
+
+    /* Sepeda paling sering diservis */
+    const jenisCounts = {};
+    tiketInRange.forEach(t => { jenisCounts[t.jenis_sepeda] = (jenisCounts[t.jenis_sepeda] || 0) + 1; });
+    const jenisRanked = Object.entries(jenisCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    const jenisMax = jenisRanked[0]?.[1] || 1;
+    document.getElementById('rankJenisSepeda').innerHTML = jenisRanked.length
+      ? jenisRanked.map(([nama, count], i) => `
+        <div class="rank-row">
+          <div class="rank-num">${i + 1}</div>
+          <div class="flex-grow-1">
+            <div class="rank-title">${nama}</div>
+            <div class="rank-sub">${count}x diservis periode ini</div>
+            <div class="rank-track"><div class="rank-fill" style="width:${Math.round((count / jenisMax) * 100)}%; background:var(--navy);"></div></div>
+          </div>
+          <div class="rank-value">${count} tiket</div>
+        </div>
+      `).join('')
+      : '<div class="empty-state">Belum ada tiket servis di periode ini.</div>';
+
+    /* Sparepart terlaris (dari penjualan langsung) */
+    const sparepartCounts = {}; // id -> { qty, revenue }
+    const tambahSparepart = (id, qty, harga) => {
+      const entry = sparepartCounts[id] || { qty: 0, revenue: 0 };
+      entry.qty += qty;
+      entry.revenue += qty * Number(harga || 0);
+      sparepartCounts[id] = entry;
+    };
+    transaksiInRange.forEach(tr => {
+      (tr.detail || []).forEach(d => {
+        if(d.jenis_item === 'sparepart') tambahSparepart(d.item_id, d.qty, d.harga_satuan);
+      });
+    });
+    tiketInRange.forEach(t => {
+      (t.detail_sparepart || []).forEach(d => tambahSparepart(d.sparepart_id, d.qty, d.harga_satuan));
+    });
+    const sparepartRanked = Object.entries(sparepartCounts)
+      .map(([id, v]) => ({ nama: sparepartById[id]?.nama || `Sparepart #${id}`, ...v }))
+      .sort((a, b) => b.qty - a.qty).slice(0, 5);
+    const spMax = sparepartRanked[0]?.qty || 1;
+    document.getElementById('rankSparepart').innerHTML = sparepartRanked.length
+      ? sparepartRanked.map((sp, i) => `
+        <div class="rank-row">
+          <div class="rank-num">${i + 1}</div>
+          <div class="flex-grow-1">
+            <div class="rank-title">${sp.nama}</div>
+            <div class="rank-sub">${sp.qty} pcs terjual</div>
+            <div class="rank-track"><div class="rank-fill" style="width:${Math.round((sp.qty / spMax) * 100)}%; background:var(--sky);"></div></div>
+          </div>
+          <div class="rank-value">${formatRupiah(sp.revenue)}</div>
+        </div>
+      `).join('')
+      : '<div class="empty-state">Belum ada sparepart terjual di periode ini.</div>';
+
+    /* Performa mekanik */
+    const mekBody = document.getElementById('mekanikPerformaBody');
+    if(!mekanikList.length){
+      mekBody.innerHTML = '<tr><td colspan="4" class="empty-state">Belum ada mekanik terdaftar.</td></tr>';
+    } else {
+      const rows = mekanikList.map(m => {
+        const tiketM = tiketInRange.filter(t => t.mekanik_id === m.id);
+        const pendapatan = tiketM.reduce((s, t) => s + Number(t.total_biaya || 0), 0);
+        return { m, count: tiketM.length, pendapatan };
+      }).sort((a, b) => b.count - a.count);
+
+      mekBody.innerHTML = rows.map(r => `
+        <tr>
+          <td><div class="d-flex align-items-center gap-2"><div class="avatar-sm2">${initial(r.m.name)}</div>${r.m.name}</div></td>
+          <td class="text-center mono">${r.count}</td>
+          <td class="mono">${formatRupiah(r.pendapatan)}</td>
+        </tr>
+      `).join('');
+    }
+
+    /* Pelanggan teratas */
+    const spendByPelanggan = {}; // id -> { nama, count, total }
+    tiketInRange.forEach(t => {
+      if(!t.pelanggan_id) return;
+      const entry = spendByPelanggan[t.pelanggan_id] || { nama: t.pelanggan?.nama || 'Pelanggan', count: 0, total: 0 };
+      entry.count += 1;
+      entry.total += Number(t.total_biaya || 0);
+      spendByPelanggan[t.pelanggan_id] = entry;
+    });
+    transaksiInRange.forEach(tr => {
+      if(!tr.pelanggan_id) return;
+      const entry = spendByPelanggan[tr.pelanggan_id] || { nama: tr.pelanggan?.nama || 'Pelanggan', count: 0, total: 0 };
+      entry.count += 1;
+      entry.total += Number(tr.total || 0);
+      spendByPelanggan[tr.pelanggan_id] = entry;
+    });
+    const pelangganRanked = Object.values(spendByPelanggan).sort((a, b) => b.total - a.total).slice(0, 5);
+    document.getElementById('rankPelanggan').innerHTML = pelangganRanked.length
+      ? pelangganRanked.map((p, i) => `
+        <div class="rank-row">
+          <div class="rank-num">${i + 1}</div>
+          <div class="flex-grow-1">
+            <div class="rank-title">${p.nama}</div>
+            <div class="rank-sub">${p.count} kali transaksi</div>
+          </div>
+          <div class="rank-value text-navy">${formatRupiah(p.total)}</div>
+        </div>
+      `).join('')
+      : '<div class="empty-state">Belum ada transaksi pelanggan di periode ini.</div>';
+  }
+
+  const periodFilters = document.querySelectorAll('.period-filter');
+  periodFilters.forEach(btn => {
+    btn.addEventListener('click', () => {
+      periodFilters.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderPeriod(btn.dataset.period);
+    });
+  });
+
+  document.getElementById('btnPrint').addEventListener('click', () => window.print());
+
+  (async function init(){
+    await loadAllData();
+    renderPeriod('bulan');
+  })();
+</script>
+</body>
+</html>

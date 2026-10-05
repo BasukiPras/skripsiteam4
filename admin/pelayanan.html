@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<script src="../mock-api.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gehenk Bike — Pelayanan</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EEF1F7;
+    --panel:#FFFFFF;
+    --panel-light:#E7EBF3;
+    --tint:#E3E8F4;
+    --ink:#131B2E;
+    --muted:#68708A;
+    --navy:#1E3A70;
+    --navy-deep:#0E1F3F;
+    --sky:#2F6FA6;
+    --rust:#C24A20;
+    --line:#DDE3EF;
+  }
+  body{background:var(--bg); color:var(--ink); font-family:'Inter', sans-serif;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  .display, h1, h2, h3, .navbar-brand, .brand-name{font-family:'Oswald', sans-serif; text-transform:uppercase; letter-spacing:.02em;}
+
+  /* sidebar (sama seperti dashboard) */
+  .sidebar{width:240px; min-height:100vh; background:var(--navy-deep); border-right:1px solid rgba(255,255,255,.06); flex-shrink:0;}
+  .brand-mark{width:34px; height:34px; border-radius:50%; border:3px solid var(--sky); display:flex; align-items:center; justify-content:center; position:relative;}
+  .brand-mark::after{content:''; width:4px; height:4px; background:var(--sky); border-radius:50%;}
+  .brand-name{font-size:16px; font-weight:600; line-height:1.1; color:#fff;}
+  .brand-sub{font-size:10px; color:rgba(255,255,255,.5); letter-spacing:.12em; text-transform:uppercase;}
+  .nav-label{font-size:10.5px; color:rgba(255,255,255,.35); text-transform:uppercase; letter-spacing:.14em; margin:16px 0 6px 12px;}
+  .sidebar .nav-link{color:rgba(255,255,255,.72); font-size:13.5px; font-weight:500; border-radius:8px; display:flex; align-items:center; gap:12px; padding:.6rem .75rem;}
+  .sidebar .nav-link i{font-size:1rem; opacity:.8; width:18px; text-align:center;}
+  .sidebar .nav-link:hover{background:rgba(255,255,255,.06); color:#fff;}
+  .sidebar .nav-link.active{background:rgba(255,255,255,.08); color:#fff; box-shadow:inset 3px 0 0 var(--sky);}
+  .sidebar .nav-link.active i{opacity:1;}
+  .sidebar-foot{background:rgba(255,255,255,.06); border:1px dashed rgba(255,255,255,.15); border-radius:10px; padding:.6rem .75rem; color:rgba(255,255,255,.75);}
+  .dot{width:7px; height:7px; border-radius:50%; background:var(--sky); display:inline-block;}
+  .nav-link-logout{color:rgba(255,140,120,.85) !important;}
+  .nav-link-logout:hover{background:rgba(194,74,32,.18) !important; color:#fff !important;}
+
+  .tag-shape{position:relative; background:var(--tint); border:1px solid var(--line); border-radius:4px 10px 10px 4px; box-shadow:0 1px 2px rgba(19,27,46,.06);}
+  .text-navy{color:var(--navy) !important;}
+  .text-sky{color:var(--sky) !important;}
+  .text-rust{color:var(--rust) !important;}
+  .card{border-color:var(--line);}
+
+  /* tab pelayanan */
+  .service-tabs .nav-link{
+    border:1px solid var(--line); border-radius:8px; color:var(--muted); font-weight:600;
+    font-size:13.5px; padding:.55rem 1.1rem; margin-right:8px; background:var(--panel);
+  }
+  .service-tabs .nav-link i{margin-right:6px;}
+  .service-tabs .nav-link.active{background:var(--ink); color:var(--tint); border-color:var(--ink);}
+
+  /* servis: kartu jenis layanan */
+  .service-check{
+    position:relative; display:block; background:var(--panel); border:1px solid var(--line);
+    border-radius:10px; padding:.9rem 1rem .9rem 2.6rem; cursor:pointer; transition:border-color .15s, background .15s;
+  }
+  .service-check input{position:absolute; left:1rem; top:1.1rem; width:16px; height:16px; accent-color:var(--navy);}
+  .service-check:has(input:checked){background:var(--tint); border-color:var(--navy);}
+  .service-check .stitle{font-weight:600; font-size:13.5px;}
+  .service-check .ssub{font-size:11.5px; color:var(--muted); margin-top:1px;}
+  .service-check .sprice{font-family:'IBM Plex Mono', monospace; font-size:13px; font-weight:600; color:var(--sky); white-space:nowrap;}
+
+  /* pembelian: kartu produk */
+  .product-card{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:1rem; height:100%; display:flex; flex-direction:column; gap:.4rem;}
+  .product-icon{
+    width:42px; height:42px; border-radius:9px; background:var(--tint); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:19px; color:var(--navy); margin-bottom:.3rem;
+  }
+  .product-name{font-weight:600; font-size:13.5px;}
+  .product-stock{font-size:11px; color:var(--muted);}
+  .product-price{font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:14px; margin-top:auto;}
+  .btn-add{
+    background:var(--panel-light); border:1px solid var(--line); border-radius:7px; font-size:12px;
+    font-weight:600; padding:.35rem .6rem; color:var(--ink);
+  }
+  .btn-add:hover{background:var(--tint); border-color:var(--navy);}
+  .btn-add:disabled{opacity:.5; cursor:not-allowed;}
+
+  /* cart / ringkasan tiket */
+  .summary-panel{background:var(--panel); border:1px solid var(--line); border-radius:10px; position:sticky; top:1.5rem;}
+  .summary-header{border-bottom:1px solid var(--line); padding:1rem; font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:.06em; text-transform:uppercase; font-weight:600;}
+  .cart-row{display:flex; align-items:center; gap:.6rem; padding:.6rem 1rem; border-bottom:1px solid var(--line);}
+  .cart-row .ci-name{font-size:12.5px; font-weight:500;}
+  .cart-row .ci-price{font-size:11px; color:var(--muted); font-family:'IBM Plex Mono', monospace;}
+  .qty-stepper{display:flex; align-items:center; border:1px solid var(--line); border-radius:7px; overflow:hidden;}
+  .qty-stepper button{background:var(--panel-light); border:none; width:22px; height:22px; font-size:13px; line-height:1; color:var(--ink);}
+  .qty-stepper span{width:22px; text-align:center; font-family:'IBM Plex Mono', monospace; font-size:12px;}
+  .cart-remove{color:var(--rust); background:none; border:none; font-size:14px;}
+  .empty-cart{padding:2rem 1rem; text-align:center; color:var(--muted); font-size:12.5px;}
+  .summary-total-row{display:flex; justify-content:space-between; padding:.35rem 1rem; font-size:13px;}
+  .summary-grand{display:flex; justify-content:space-between; padding:.8rem 1rem; font-weight:700; font-size:16px; border-top:1px dashed var(--line); font-family:'IBM Plex Mono', monospace;}
+  .btn-proses{background:var(--navy); border:none; color:#fff; font-weight:600; border-radius:8px; padding:.65rem; width:calc(100% - 2rem); margin:0 1rem 1rem;}
+  .btn-proses:hover{background:#16294D; color:#fff;}
+  .btn-proses:disabled{background:var(--muted); cursor:not-allowed;}
+  .form-control, .form-select{border-color:var(--line);}
+  .form-control:focus, .form-select:focus{box-shadow:none; border-color:var(--navy);}
+  .payment-pill{border:1px solid var(--line); border-radius:8px; padding:.5rem; font-size:12px; text-align:center; cursor:pointer; background:var(--panel);}
+  .payment-pill.active{background:var(--tint); border-color:var(--navy); font-weight:600;}
+
+  /* stepper */
+  .step-dot{display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:600; color:var(--muted);}
+  .step-dot span{
+    width:22px; height:22px; border-radius:50%; background:var(--panel-light); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--muted);
+  }
+  .step-dot.active{color:var(--ink);}
+  .step-dot.active span{background:var(--navy); border-color:var(--navy); color:#fff;}
+  .step-dot.done span{background:var(--sky); border-color:var(--sky); color:#fff;}
+  .step-line{flex:0 0 40px; height:1px; background:var(--line);}
+
+  .suggestion-chip{
+    border:1px dashed var(--line); border-radius:20px; padding:.3rem .75rem; font-size:11.5px;
+    color:var(--muted); cursor:pointer; background:var(--panel); font-weight:500;
+  }
+  .suggestion-chip:hover{border-color:var(--navy); color:var(--ink); background:var(--tint);}
+  .text-ink{color:var(--ink);}
+  .empty-state{color:var(--muted); font-size:12.5px; text-align:center; padding:1.25rem .5rem;}
+  .form-text-error{color:var(--rust); font-size:12px;}
+
+  .filter-chip{
+    border:1px solid var(--line); border-radius:20px; padding:.35rem .9rem; font-size:12px;
+    font-weight:600; color:var(--muted); background:var(--panel); cursor:pointer;
+  }
+  .filter-chip.active{background:var(--navy); color:#fff; border-color:var(--navy);}
+  .page-btn{
+    width:30px; height:30px; border-radius:50%; border:1px solid var(--line); background:var(--panel);
+    color:var(--ink); font-weight:600; font-size:12.5px; display:flex; align-items:center; justify-content:center;
+  }
+  .page-btn:hover{border-color:var(--navy);}
+  .page-btn.active{background:var(--navy); color:#fff; border-color:var(--navy);}
+</style>
+</head>
+<body>
+
+<div class="d-flex">
+
+  <!-- Sidebar -->
+  <aside class="sidebar d-none d-lg-flex flex-column p-3">
+    <div class="d-flex align-items-center gap-2 mb-4 px-1">
+      <img src="../storage/Bike_Only.png" alt="Logo" width="75" height="50" class="d-inline-block align-text-top">
+      <div>
+        <div class="brand-name">Gehenk Bike</div>
+        <div class="brand-sub">by Cecep</div>
+      </div>
+    </div>
+
+    <div class="nav-label">Utama</div>
+    <ul class="nav nav-pills flex-column mb-2">
+      <li class="nav-item"><a class="nav-link" href="bengkel-dashboard.html"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a></li>
+      <li class="nav-item"><a class="nav-link active" href="pelayanan.html"><i class="bi bi-cart-check-fill"></i> Pelayanan</a></li>
+      <li class="nav-item"><a class="nav-link" href="antrian-servis.html"><i class="bi bi-clock-history"></i> Antrian Servis</a></li>
+      <li class="nav-item"><a class="nav-link" href="pelanggan.html"><i class="bi bi-people-fill"></i> Pelanggan</a></li>
+      <li class="nav-item"><a class="nav-link" href="sparepart.html"><i class="bi bi-box-seam-fill"></i> Sparepart</a></li>
+      <li class="nav-item"><a class="nav-link" href="sepeda.html"><i class="bi bi-bicycle"></i> Sepeda</a></li>
+      <li class="nav-item"><a class="nav-link" href="mekanik.html"><i class="bi bi-tools"></i> Mekanik</a></li>
+    </ul>
+
+    <div class="nav-label">Lainnya</div>
+    <ul class="nav nav-pills flex-column">
+      <li class="nav-item"><a class="nav-link" href="laporan.html"><i class="bi bi-bar-chart-line-fill"></i> Laporan</a></li>
+      <li class="nav-item"><a class="nav-link" href="pengaturan.html"><i class="bi bi-gear-fill"></i> Pengaturan</a></li>
+      <li class="nav-item"><a class="nav-link nav-link-logout" href="#" id="btnLogoutSidebar"><i class="bi bi-box-arrow-right"></i> Keluar</a></li>
+    </ul>
+
+    
+  </aside>
+
+  <!-- Main -->
+  <div class="flex-grow-1">
+
+    <nav class="navbar d-lg-none border-bottom" style="background:var(--navy-deep); border-color:var(--navy-deep) !important;">
+      <div class="container-fluid">
+        <button class="btn btn-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileNav" style="border:1px solid rgba(255,255,255,.2); color:#fff;">
+          <i class="bi bi-list fs-5"></i>
+        </button>
+        <span class="brand-name fs-6 mb-0" style="color:#fff;">Gehenk Bike</span>
+        <span style="width:38px;"></span>
+      </div>
+    </nav>
+    <div class="offcanvas offcanvas-start" id="mobileNav" style="background:var(--navy-deep); width:240px;">
+      <div class="offcanvas-body p-3">
+        <div class="nav-label">Utama</div>
+        <ul class="nav nav-pills flex-column mb-2">
+          <li class="nav-item"><a class="nav-link" href="bengkel-dashboard.html"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link active" href="pelayanan.html"><i class="bi bi-cart-check-fill"></i> Pelayanan</a></li>
+          <li class="nav-item"><a class="nav-link" href="antrian-servis.html"><i class="bi bi-clock-history"></i> Antrian Servis</a></li>
+          <li class="nav-item"><a class="nav-link" href="pelanggan.html"><i class="bi bi-people-fill"></i> Pelanggan</a></li>
+          <li class="nav-item"><a class="nav-link" href="sparepart.html"><i class="bi bi-box-seam-fill"></i> Sparepart</a></li>
+          <li class="nav-item"><a class="nav-link" href="sepeda.html"><i class="bi bi-bicycle"></i> Sepeda</a></li>
+          <li class="nav-item"><a class="nav-link" href="mekanik.html"><i class="bi bi-tools"></i> Mekanik</a></li>
+        </ul>
+        <div class="nav-label">Lainnya</div>
+        <ul class="nav nav-pills flex-column">
+          <li class="nav-item"><a class="nav-link" href="laporan.html"><i class="bi bi-bar-chart-line-fill"></i> Laporan</a></li>
+          <li class="nav-item"><a class="nav-link" href="pengaturan.html"><i class="bi bi-gear-fill"></i> Pengaturan</a></li>
+          <li class="nav-item"><a class="nav-link nav-link-logout" href="#" id="btnLogoutMobile"><i class="bi bi-box-arrow-right"></i> Keluar</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <main class="p-3 p-lg-5">
+
+      <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+        <div>
+          <div class="text-navy fw-semibold small text-uppercase" style="letter-spacing:.16em; font-size:11px;">Buat Transaksi Baru</div>
+          <h1 class="fs-3 fw-semibold mb-0 mt-1">Pelayanan</h1>
+          <div class="text-muted small mt-1">Layani servis sepeda atau penjualan di sini</div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <ul class="nav service-tabs mb-4" id="pelayananTab" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="tab-servis-btn" data-bs-toggle="tab" data-bs-target="#tab-servis" type="button" role="tab">
+            <i class="bi bi-tools"></i>Kebutuhan Servis
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab-beli-btn" data-bs-toggle="tab" data-bs-target="#tab-beli" type="button" role="tab">
+            <i class="bi bi-bag-check"></i>Pembelian Barang
+          </button>
+        </li>
+      </ul>
+
+      <div class="tab-content">
+
+        <!-- ===================== TAB SERVIS ===================== -->
+        <div class="tab-pane fade show active" id="tab-servis" role="tabpanel">
+
+          <!-- Stepper -->
+          <div class="d-flex align-items-center gap-2 mb-4" id="stepIndicator">
+            <div class="step-dot active" id="stepDot1"><span>1</span> Data Pelanggan</div>
+            <div class="step-line"></div>
+            <div class="step-dot" id="stepDot2"><span>2</span> Pilih Layanan</div>
+          </div>
+
+          <!-- ===== STEP 1: Data Pelanggan & Sepeda ===== -->
+          <div id="step1">
+            <div class="row g-4">
+              <div class="col-lg-7">
+                <div class="tag-shape p-3">
+                  <h2 class="fs-6 mb-3">Data Pelanggan &amp; Sepeda</h2>
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label class="form-label small fw-medium">Nama Pelanggan</label>
+                      <input type="text" class="form-control" id="inNama" list="daftarPelangganNama" placeholder="Ketik nama pelanggan" autocomplete="off">
+                      <datalist id="daftarPelangganNama"></datalist>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label small fw-medium">Nomor HP / WhatsApp</label>
+                      <input type="text" class="form-control" id="inHp" placeholder="08xx-xxxx-xxxx">
+                    </div>
+                    <div class="col-12 d-none" id="pelangganMatchInfo">
+                      <div class="small text-sky"><i class="bi bi-person-check-fill me-1"></i><span id="pelangganMatchText"></span></div>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label small fw-medium">Jenis Sepeda</label>
+                      <input type="text" class="form-control" id="inJenis" list="daftarJenisSepeda" placeholder="Pilih atau ketik jenis baru" autocomplete="off">
+                      <datalist id="daftarJenisSepeda">
+                        <option value="MTB">
+                        <option value="Roadbike">
+                        <option value="Sepeda Lipat">
+                        <option value="BMX">
+                        <option value="Sepeda Listrik">
+                        <option value="Sepeda Anak">
+                      </datalist>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label small fw-medium">Mekanik</label>
+                      <select class="form-select" id="inMekanik">
+                        <option value="">Belum ditugaskan</option>
+                      </select>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label small fw-medium">Kompleksitas Layanan</label>
+                      <select class="form-select" id="inKompleksitas">
+                        <option value="rendah">Rendah</option>
+                        <option value="sedang">Sedang</option>
+                        <option value="tinggi">Tinggi</option>
+                      </select>
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label small fw-medium">Keluhan / Catatan</label>
+                      <textarea class="form-control" id="inKeluhan" rows="2" placeholder="cth. Rem depan bunyi, gear belakang seret..."></textarea>
+                    </div>
+                  </div>
+                  <div class="text-danger small mt-2 d-none" id="step1Error">Nama pelanggan wajib diisi sebelum membuat tiket.</div>
+                  <button class="btn-proses mt-3" style="width:auto; margin:0; padding:.65rem 1.4rem;" id="btnBuatTiket">
+                    Buat Tiket &amp; Lanjutkan <i class="bi bi-arrow-right ms-1"></i>
+                  </button>
+                </div>
+              </div>
+              
+            </div>
+          </div>
+
+          <!-- ===== STEP 2: Pilih Layanan (harga manual) ===== -->
+          <div id="step2" class="d-none">
+            <div class="tag-shape p-3 mb-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
+              <div>
+                <div class="mono small text-muted" id="ticketNo">#RJ-0000</div>
+                <div class="fw-semibold" id="ticketCustomer">—</div>
+                <div class="small text-muted" id="ticketBike">—</div>
+              </div>
+              <button class="btn btn-sm" id="btnBackStep" style="border:1px solid var(--line); background:var(--panel);">
+                <i class="bi bi-pencil me-1"></i>Ubah Data
+              </button>
+            </div>
+
+            <div class="row g-4">
+              <div class="col-lg-7">
+                <div class="tag-shape p-3">
+                  <h2 class="fs-6 mb-3">Tambah Layanan Servis</h2>
+
+                  <div class="row g-2 align-items-end mb-2">
+                    <div class="col-6">
+                      <label class="form-label small fw-medium">Nama Layanan</label>
+                      <input type="text" class="form-control" id="svcName" placeholder="cth. Ganti Kampas Rem">
+                    </div>
+                    <div class="col-4">
+                      <label class="form-label small fw-medium">Biaya (Rp)</label>
+                      <input type="number" class="form-control" id="svcPrice" placeholder="0" min="0" step="1000">
+                    </div>
+                    <div class="col-2">
+                      <button class="btn w-100" id="btnAddSvc" style="background:var(--navy); color:#fff; border:none; font-weight:600;">+</button>
+                    </div>
+                  </div>
+
+                  <div class="d-flex flex-wrap gap-2 mb-1" id="svcSuggestions">
+                    <span class="suggestion-chip" data-name="Servis Ringan" data-price="5000">Servis Ringan</span>
+                    <span class="suggestion-chip" data-name="Servis Lengkap" data-price="20000">Servis Lengkap</span>
+                    <span class="suggestion-chip" data-name="Ganti Ban Dalam" data-price="5000">Ganti Ban Dalam</span>
+                  </div>
+
+                  <hr style="border-color:var(--line);" class="my-3">
+
+                  <h2 class="fs-6 mb-2">Layanan Ditambahkan</h2>
+                  <div id="svcListWrap">
+                    <div class="empty-cart" id="svcEmpty">
+                      <i class="bi bi-clipboard-check fs-3 d-block mb-2"></i>
+                      Belum ada layanan ditambahkan.<br>Isi nama &amp; biaya layanan di atas.
+                    </div>
+                    <div id="svcItemsList"></div>
+                  </div>
+                </div>
+
+                <div class="tag-shape p-3 mt-4">
+                  <h2 class="fs-6 mb-3">Tambah Sparepart Digunakan</h2>
+
+                  <div class="row g-2 align-items-end mb-2">
+                    <div class="col-5">
+                      <label class="form-label small fw-medium">Pilih Sparepart</label>
+                      <select class="form-select" id="partSelect">
+                        <option value="">Memuat sparepart…</option>
+                      </select>
+                    </div>
+                    <div class="col-3">
+                      <label class="form-label small fw-medium">Harga Satuan</label>
+                      <input type="text" class="form-control" id="partPriceDisplay" value="Rp 0" readonly style="background:var(--panel-light); color:var(--muted); font-family:'IBM Plex Mono', monospace;">
+                    </div>
+                    <div class="col-2">
+                      <label class="form-label small fw-medium">Qty</label>
+                      <input type="number" class="form-control" id="partQty" placeholder="1" min="1" value="1">
+                    </div>
+                    <div class="col-2">
+                      <button class="btn w-100" id="btnAddPart" style="background:var(--sky); color:#fff; border:none; font-weight:600;">+</button>
+                    </div>
+                  </div>
+
+                  <div class="form-text-error d-none" id="partError"></div>
+
+                  <hr style="border-color:var(--line);" class="my-3">
+
+                  <h2 class="fs-6 mb-2">Sparepart Ditambahkan</h2>
+                  <div id="partListWrap">
+                    <div class="empty-cart" id="partEmpty">
+                      <i class="bi bi-box-seam fs-3 d-block mb-2"></i>
+                      Belum ada sparepart ditambahkan.
+                    </div>
+                    <div id="partItemsList"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-lg-5">
+                <div class="summary-panel">
+                  <div class="summary-header">Ringkasan Tiket Servis</div>
+                  <div class="p-3 pb-0">
+                    <div class="d-flex justify-content-between small text-muted mb-1"><span>Pelanggan</span><span class="text-ink fw-medium" id="sumNama">—</span></div>
+                    <div class="d-flex justify-content-between small text-muted mb-1"><span>Sepeda</span><span class="text-ink fw-medium" id="sumJenis">—</span></div>
+                    <div class="d-flex justify-content-between small text-muted"><span>Mekanik</span><span class="text-ink fw-medium" id="sumMekanik">—</span></div>
+                    <div class="d-flex justify-content-between small text-muted mt-1"><span>Estimasi Selesai (AI)</span><span class="text-ink fw-medium" id="sumEstimasi">—</span></div>
+                  </div>
+                  <div class="summary-total-row text-muted mt-2"><span>Jumlah layanan</span><span class="mono" id="svcCount">0</span></div>
+                  <div class="summary-total-row text-muted"><span>Jumlah sparepart</span><span class="mono" id="partCount">0</span></div>
+                  <div class="summary-total-row text-muted"><span>Biaya jasa</span><span class="mono" id="svcSubtotal">Rp 0</span></div>
+                  <div class="summary-total-row text-muted"><span>Biaya sparepart</span><span class="mono" id="partSubtotal">Rp 0</span></div>
+                  <div class="summary-grand"><span>Total Biaya</span><span class="text-navy" id="svcTotal">Rp 0</span></div>
+                  <button class="btn-proses" id="btnFinishTicket">Selesai &amp; Masuk Antrian</button>
+                  <div class="text-center text-sky small fw-semibold d-none pb-3" id="ticketDoneMsg">
+                    <i class="bi bi-check-circle-fill me-1"></i>Layanan &amp; sparepart tersimpan otomatis di tiket ini
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ===================== TAB BELI BARANG ===================== -->
+        <div class="tab-pane fade" id="tab-beli" role="tabpanel">
+          <div class="row g-4">
+            <div class="col-lg-7">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="fs-6 mb-0">Katalog Sparepart &amp; Aksesori</h2>
+                <input type="text" class="form-control form-control-sm" id="productSearch" style="max-width:200px;" placeholder="Cari barang...">
+              </div>
+              <div class="d-flex flex-wrap gap-2 mb-3" id="productFilters"></div>
+              <div class="row g-3" id="productGrid">
+                <div class="empty-state">Memuat katalog sparepart…</div>
+              </div>
+              <nav class="d-flex justify-content-center mt-3" id="productPagination"></nav>
+            </div>
+
+            <div class="col-lg-5">
+              <div class="summary-panel">
+                <div class="summary-header d-flex justify-content-between align-items-center">
+                  <span>Keranjang</span>
+                  <span class="mono small text-muted" id="cartCount">0 barang</span>
+                </div>
+                <div class="p-3 pb-2 border-bottom" style="border-color:var(--line) !important;">
+                  <label class="form-label small fw-medium mb-1">Pelanggan</label>
+                  <select class="form-select form-select-sm" id="cartPelanggan">
+                    <option value="">Tanpa pelanggan (umum)</option>
+                  </select>
+                </div>
+                <div id="cartBody">
+                  <div class="empty-cart" id="cartEmpty">
+                    <i class="bi bi-cart fs-3 d-block mb-2"></i>
+                    Keranjang masih kosong.<br>Klik "+ Tambah" pada barang.
+                  </div>
+                </div>
+                <div class="p-3 border-top" style="border-color:var(--line) !important;">
+                  <label class="form-label small fw-medium mb-1">Tanggal Transaksi</label>
+                  <input type="date" class="form-control form-control-sm mb-3" id="cartTanggal">
+                  <label class="form-label small fw-medium mb-2">Metode Pembayaran</label>
+                  <div class="payment-pill active" data-pay="tunai" style="cursor:default;"><i class="bi bi-cash me-1"></i>Tunai</div>
+                </div>
+                <div class="summary-total-row text-muted"><span>Subtotal</span><span class="mono" id="cartSubtotal">Rp 0</span></div>
+                <div class="summary-grand"><span>Total Bayar</span><span class="text-navy" id="cartTotal">Rp 0</span></div>
+                <div class="form-text-error d-none px-3 mb-2" id="checkoutError"></div>
+                <button class="btn-proses" id="btnCheckout" disabled>Proses Pembayaran</button>
+                <div class="text-center text-sky small fw-semibold d-none pb-3" id="checkoutDoneMsg">
+                  <i class="bi bi-check-circle-fill me-1"></i>Transaksi berhasil disimpan
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Modal Invoice -->
+<div class="modal fade" id="modalInvoice" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header d-print-none">
+        <h5 class="modal-title fs-6" style="font-family:'Oswald',sans-serif; text-transform:uppercase;">Invoice</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" id="btnCloseInvoice"></button>
+      </div>
+      <div class="modal-body" id="invoiceBody">
+        <!-- diisi JS -->
+      </div>
+      <div class="modal-footer d-print-none">
+        <button type="button" class="btn btn-sm" id="btnPrintInvoice" style="border:1px solid var(--line); background:var(--panel);"><i class="bi bi-printer me-1"></i>Cetak</button>
+        <button type="button" class="btn btn-sm btn-proses" style="width:auto; margin:0; padding:.45rem 1.1rem;" id="btnCloseInvoiceBtn" data-bs-dismiss="modal">Selesai</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  @media print {
+    body *{ visibility:hidden; }
+    #modalInvoice, #modalInvoice *{ visibility:visible; }
+    #modalInvoice{ position:absolute; inset:0; }
+    .modal-dialog{ max-width:100%; margin:0; }
+  }
+  .invoice-row{display:flex; justify-content:space-between; font-size:13px; padding:.3rem 0;}
+  .invoice-total-row{display:flex; justify-content:space-between; font-weight:700; font-size:16px; border-top:1px dashed var(--line); padding-top:.6rem; margin-top:.4rem;}
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script>
+  const API_BASE = '';
+
+  /* Batasi akses mekanik: hanya boleh Pelayanan & Antrian Servis (buat/kerjakan tiket, pakai sparepart) */
+  (async function guardAksesMekanik(){
+    const HALAMAN_TERLARANG = ['bengkel-dashboard.html','pelanggan.html','sparepart.html','sepeda.html','mekanik.html','laporan.html','pengaturan.html'];
+    try {
+      const res = await fetch('/api/me', { headers: { Accept: 'application/json' } });
+      const { data } = await res.json();
+      if (!data || data.job !== 'mekanik') return;
+
+      const halamanIni = location.pathname.split('/').pop();
+      if (HALAMAN_TERLARANG.includes(halamanIni)) { location.href = 'pelayanan.html'; return; }
+
+      document.querySelectorAll('.sidebar a.nav-link, .offcanvas a.nav-link').forEach(a => {
+        if (HALAMAN_TERLARANG.includes(a.getAttribute('href'))) a.closest('li')?.classList.add('d-none');
+      });
+
+      // Pembelian Barang = penjualan retail, di luar 3 izin mekanik (servis saja)
+      document.getElementById('tab-beli-btn')?.closest('li')?.classList.add('d-none');
+
+      // dropdown "Mekanik" di form tiket servis dikunci ke akun mekanik yg login (tidak boleh pilih mekanik lain)
+      window.mekanikLoginId = data.id;
+      if (typeof renderMekanikOptions === 'function' && mekanikList.length) renderMekanikOptions();
+    } catch (err) { /* kalau /api/me gagal, biarkan halaman tampil normal */ }
+  })();
+
+  /* ---------- Logout ---------- */
+  async function handleLogout(btn){
+    if(!confirm('Yakin ingin keluar dari akun ini?')) return;
+    if(btn){ btn.disabled = true; }
+    try {
+      await fetch('/api/logout', { method: 'POST', headers: { Accept: 'application/json' } });
+    } catch (err) {
+      // tetap arahkan ke login walau logout API gagal, supaya tidak terjebak di halaman admin
+    } finally {
+      window.location.href = 'login.html';
+    }
+  }
+  ['btnLogoutSidebar', 'btnLogoutMobile'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.addEventListener('click', (e) => { e.preventDefault(); handleLogout(el); });
+  });
+
+  function onlyDigits(s){ return (s || '').replace(/\D/g, ''); }
+
+  function formatRupiah(n){
+    return 'Rp ' + Number(n || 0).toLocaleString('id-ID');
+  }
+
+  async function fetchJson(path, options){
+    const res = await fetch(`${API_BASE}${path}`, {
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      ...options,
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const err = new Error(body.message || `Gagal memanggil ${path} (${res.status})`);
+      err.body = body;
+      throw err;
+    }
+    return body;
+  }
+
+  const ICON_RULES = [
+    [/rem|cakram|disc/i, 'bi-disc'],
+    [/ban\b/i, 'bi-circle'],
+    [/rantai|chain/i, 'bi-link-45deg'],
+    [/kabel|cable/i, 'bi-cable'],
+    [/pelumas|oli|oil/i, 'bi-droplet'],
+    [/sadel|seat/i, 'bi-hexagon'],
+    [/pedal/i, 'bi-record-circle'],
+    [/lampu|led|light/i, 'bi-lightbulb'],
+    [/helm|helmet/i, 'bi-bucket'],
+  ];
+  function iconFor(nama){
+    const rule = ICON_RULES.find(([re]) => re.test(nama));
+    return rule ? rule[1] : 'bi-box-seam-fill';
+  }
+
+  /* ---------- Data referensi dari server ---------- */
+  let sparepartList = [];
+  let sepedaList = [];
+  let mekanikList = [];
+  let pelangganList = [];
+
+  async function loadReferenceData(){
+    const [spRes, mkRes, plRes, sdRes] = await Promise.allSettled([
+      fetchJson('/api/sparepart'),
+      fetchJson('/api/users?job=mekanik'),
+      fetchJson('/api/pelanggan'),
+      fetchJson('/api/sepeda'),
+    ]);
+
+    sparepartList = spRes.status === 'fulfilled' ? (spRes.value.data || []) : [];
+    mekanikList = mkRes.status === 'fulfilled' ? (mkRes.value.data || []) : [];
+    pelangganList = plRes.status === 'fulfilled' ? (plRes.value.data || []) : [];
+    sepedaList = sdRes.status === 'fulfilled' ? (sdRes.value.data || []) : [];
+
+    renderMekanikOptions();
+    renderPartSelect();
+    renderProductGrid();
+    renderPelangganOptions();
+  }
+
+  function renderMekanikOptions(){
+    const select = document.getElementById('inMekanik');
+    select.innerHTML = '<option value="">Belum ditugaskan</option>' +
+      mekanikList.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+
+    // kalau yang login mekanik, kunci ke dirinya sendiri, tidak boleh pilih mekanik lain
+    if (window.mekanikLoginId) {
+      select.value = window.mekanikLoginId;
+      select.disabled = true;
+    }
+  }
+
+  function renderPelangganOptions(){
+    const select = document.getElementById('cartPelanggan');
+    select.innerHTML = '<option value="">Tanpa pelanggan (umum)</option>' +
+      pelangganList.map(p => `<option value="${p.id}">${p.nama} — ${p.no_hp}</option>`).join('');
+
+    // datalist nama pelanggan utk Step 1 tiket servis - biar staf tinggal pilih yg sudah ada
+    document.getElementById('daftarPelangganNama').innerHTML =
+      [...new Set(pelangganList.map(p => p.nama))].map(n => `<option value="${n}">`).join('');
+  }
+
+  /**
+   * Cocokkan input Nama/HP pelanggan di Step 1 dgn data yg sudah ada. Begitu ketemu
+   * (nama unik atau nomor HP sama persis), otomatis isi field satunya & simpan ID-nya,
+   * supaya tiket nyambung ke pelanggan lama - bukan bikin pelanggan baru duplikat
+   * cuma gara-gara format nomor HP sedikit beda.
+   */
+  let pelangganTerpilihId = null;
+  const inNamaEl = document.getElementById('inNama');
+  const inHpEl = document.getElementById('inHp');
+  const pelangganMatchInfo = document.getElementById('pelangganMatchInfo');
+  const pelangganMatchText = document.getElementById('pelangganMatchText');
+
+  function tampilkanMatchPelanggan(p){
+    pelangganTerpilihId = p.id;
+    pelangganMatchText.textContent = `Pelanggan terdaftar: ${p.nama} (${p.no_hp})`;
+    pelangganMatchInfo.classList.remove('d-none');
+  }
+  function sembunyikanMatchPelanggan(){
+    pelangganTerpilihId = null;
+    pelangganMatchInfo.classList.add('d-none');
+  }
+
+  inNamaEl.addEventListener('input', () => {
+    const cocok = pelangganList.filter(p => p.nama.toLowerCase() === inNamaEl.value.trim().toLowerCase());
+    if (cocok.length === 1) {
+      inHpEl.value = cocok[0].no_hp;
+      tampilkanMatchPelanggan(cocok[0]);
+    } else {
+      sembunyikanMatchPelanggan();
+    }
+  });
+
+  inHpEl.addEventListener('input', () => {
+    const digitInput = onlyDigits(inHpEl.value);
+    if (digitInput.length < 8) { sembunyikanMatchPelanggan(); return; }
+    const cocok = pelangganList.find(p => onlyDigits(p.no_hp) === digitInput);
+    if (cocok) {
+      inNamaEl.value = cocok.nama;
+      tampilkanMatchPelanggan(cocok);
+    } else {
+      sembunyikanMatchPelanggan();
+    }
+  });
+
+  function renderPartSelect(){
+    const select = document.getElementById('partSelect');
+    // hanya sparepart asli yg dipakai buat servis, aksesoris (helm, dll) tidak relevan di sini
+    const daftarSparepartMurni = sparepartList.filter(sp => sp.kategori_utama === 'sparepart');
+
+    if (!daftarSparepartMurni.length) {
+      select.innerHTML = '<option value="">Belum ada sparepart tercatat</option>';
+      document.getElementById('partPriceDisplay').value = 'Rp 0';
+      return;
+    }
+    select.innerHTML = daftarSparepartMurni.map(sp => `
+      <option value="${sp.id}" data-price="${sp.harga}" data-stok="${sp.stok}">${sp.nama}${sp.stok <= 0 ? ' (stok habis)' : ''}</option>
+    `).join('');
+    updatePartPriceDisplay();
+  }
+
+  const ITEM_PER_HALAMAN = 9; // 3x3
+  let activeSubKategori = 'semua';
+  let currentPage = 1;
+
+  function semuaBarangKatalog(){
+    return [
+      ...sparepartList.map(sp => ({
+        id: sp.id, nama: sp.nama, harga: sp.harga, stok: sp.stok, satuan: sp.satuan,
+        jenis_item: 'sparepart', subKategori: sp.kategori?.nama || 'Lainnya',
+      })),
+      ...sepedaList.map(sd => ({
+        id: sd.id, nama: `${sd.merek} ${sd.nama}`.trim(), harga: sd.harga, stok: sd.stok,
+        satuan: 'unit', jenis_item: 'sepeda', subKategori: 'Sepeda',
+      })),
+    ];
+  }
+
+  function renderProductFilters(semuaBarang){
+    const wrap = document.getElementById('productFilters');
+    // cuma tampilkan sub-kategori yg beneran ada barangnya (bukan daftar tetap)
+    const daftarSubKategori = [...new Set(semuaBarang.map(b => b.subKategori))].sort();
+
+    if (daftarSubKategori.length <= 1) { wrap.innerHTML = ''; return; }
+
+    const chip = (value, label) => `<span class="filter-chip ${activeSubKategori === value ? 'active' : ''}" data-sub="${value}">${label}</span>`;
+    wrap.innerHTML = chip('semua', 'Semua') + daftarSubKategori.map(s => chip(s, s)).join('');
+
+    wrap.querySelectorAll('.filter-chip').forEach(el => {
+      el.addEventListener('click', () => {
+        activeSubKategori = el.dataset.sub;
+        currentPage = 1;
+        renderProductGrid(document.getElementById('productSearch').value);
+      });
+    });
+  }
+
+  function renderProductPagination(totalItem){
+    const nav = document.getElementById('productPagination');
+    const totalHalaman = Math.ceil(totalItem / ITEM_PER_HALAMAN);
+    if (totalHalaman <= 1) { nav.innerHTML = ''; return; }
+
+    let btns = '';
+    for (let i = 1; i <= totalHalaman; i++) {
+      btns += `<button type="button" class="page-btn mx-1 ${i === currentPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
+    }
+    nav.innerHTML = btns;
+
+    nav.querySelectorAll('.page-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentPage = Number(btn.dataset.page);
+        renderProductGrid(document.getElementById('productSearch').value);
+        document.getElementById('productGrid').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+    });
+  }
+
+  function renderProductGrid(query){
+    const grid = document.getElementById('productGrid');
+    const q = (query || '').trim().toLowerCase();
+    const semuaBarang = semuaBarangKatalog();
+
+    renderProductFilters(semuaBarang);
+
+    let items = activeSubKategori === 'semua' ? semuaBarang : semuaBarang.filter(b => b.subKategori === activeSubKategori);
+    if (q) items = items.filter(b => b.nama.toLowerCase().includes(q));
+
+    if (!semuaBarang.length) {
+      grid.innerHTML = '<div class="empty-state">Belum ada sparepart/sepeda tercatat. Tambahkan dulu di halaman Sparepart atau Sepeda.</div>';
+      document.getElementById('productPagination').innerHTML = '';
+      return;
+    }
+    if (!items.length) {
+      grid.innerHTML = '<div class="empty-state">Tidak ada barang yang cocok.</div>';
+      document.getElementById('productPagination').innerHTML = '';
+      return;
+    }
+
+    const totalHalaman = Math.max(1, Math.ceil(items.length / ITEM_PER_HALAMAN));
+    if (currentPage > totalHalaman) currentPage = totalHalaman;
+    const awal = (currentPage - 1) * ITEM_PER_HALAMAN;
+    const itemHalamanIni = items.slice(awal, awal + ITEM_PER_HALAMAN);
+
+    grid.innerHTML = itemHalamanIni.map(sp => `
+      <div class="col-6 col-md-4">
+        <div class="product-card">
+          <div class="product-icon"><i class="bi ${sp.jenis_item === 'sepeda' ? 'bi-bicycle' : iconFor(sp.nama)}"></i></div>
+          <div class="product-name">${sp.nama}</div>
+          <div class="product-stock">Stok: ${sp.stok} ${sp.satuan || 'pcs'}</div>
+          <div class="d-flex justify-content-between align-items-center mt-1">
+            <span class="product-price">${formatRupiah(sp.harga)}</span>
+            <button class="btn-add" data-id="${sp.id}" data-jenis="${sp.jenis_item}" data-name="${sp.nama}" data-price="${sp.harga}" data-stok="${sp.stok}" ${sp.stok <= 0 ? 'disabled' : ''}>+ Tambah</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    renderProductPagination(items.length);
+  }
+
+  document.getElementById('productSearch').addEventListener('input', (e) => {
+    currentPage = 1;
+    renderProductGrid(e.target.value);
+  });
+
+  /* ---------- Tab Servis: alur 2 langkah ---------- */
+  const step1 = document.getElementById('step1');
+  const step2 = document.getElementById('step2');
+  const stepDot1 = document.getElementById('stepDot1');
+  const stepDot2 = document.getElementById('stepDot2');
+  const step1Error = document.getElementById('step1Error');
+  const btnBuatTiket = document.getElementById('btnBuatTiket');
+
+  let currentTiketId = null;
+  let svcItems = [];   // { nama_layanan, biaya }
+  let partItems = [];  // { sparepart_id, nama, harga_satuan, qty }
+
+  /**
+   * Minta estimasi waktu selesai ke AiController::estimasiServis (LightGBM, fallback
+   * heuristik kalau AI service mati). Dipanggil ulang tiap layanan/sparepart berubah,
+   * karena keduanya jadi fitur input model.
+   */
+  async function refreshEstimasi(){
+    if (!currentTiketId) return;
+    try {
+      const { data } = await fetchJson('/api/ai/estimasi-servis', {
+        method: 'POST',
+        body: JSON.stringify({ tiket_id: currentTiketId }),
+      });
+      document.getElementById('sumEstimasi').textContent = data.estimasi_selesai;
+    } catch (err) {
+      document.getElementById('sumEstimasi').textContent = '—';
+    }
+  }
+
+  btnBuatTiket.addEventListener('click', async () => {
+    const nama = document.getElementById('inNama').value.trim();
+    const noHp = document.getElementById('inHp').value.trim();
+    const jenis = document.getElementById('inJenis').value.trim();
+    if(!nama || !noHp || !jenis){
+      step1Error.textContent = 'Nama pelanggan, nomor HP, dan jenis sepeda wajib diisi sebelum membuat tiket.';
+      step1Error.classList.remove('d-none');
+      return;
+    }
+    step1Error.classList.add('d-none');
+
+    const mekanikId = document.getElementById('inMekanik').value;
+    const mekanikNama = mekanikId ? document.getElementById('inMekanik').selectedOptions[0].textContent : 'Belum ditugaskan';
+    const kompleksitas = document.getElementById('inKompleksitas').value;
+    const keluhan = document.getElementById('inKeluhan').value.trim();
+
+    btnBuatTiket.disabled = true;
+    btnBuatTiket.textContent = 'Menyimpan…';
+
+    // kalau nama/HP cocok pelanggan yg sudah ada, pakai ID-nya langsung - jangan andalkan
+    // backend mencocokkan string nomor HP persis sama (rawan gagal gara-gara beda format)
+    const bodyPelanggan = pelangganTerpilihId
+      ? { pelanggan_id: pelangganTerpilihId }
+      : { nama_pelanggan_baru: nama, no_hp_pelanggan_baru: noHp };
+
+    try {
+      const { data: tiket } = await fetchJson('/api/tiket-servis', {
+        method: 'POST',
+        body: JSON.stringify({
+          ...bodyPelanggan,
+          jenis_sepeda: jenis,
+          keluhan: keluhan || null,
+          mekanik_id: mekanikId || null,
+          kompleksitas,
+        }),
+      });
+
+      currentTiketId = tiket.id;
+      svcItems = [];
+      partItems = [];
+
+      document.getElementById('ticketNo').textContent = '#' + tiket.nomor_tiket;
+      document.getElementById('ticketCustomer').textContent = nama;
+      document.getElementById('ticketBike').textContent = jenis;
+      document.getElementById('sumNama').textContent = nama;
+      document.getElementById('sumJenis').textContent = jenis;
+      document.getElementById('sumMekanik').textContent = mekanikNama;
+      document.getElementById('ticketDoneMsg').classList.add('d-none');
+
+      renderSvcList();
+      renderPartList();
+
+      step1.classList.add('d-none');
+      step2.classList.remove('d-none');
+      stepDot1.classList.remove('active'); stepDot1.classList.add('done');
+      stepDot2.classList.add('active');
+
+      refreshEstimasi();
+    } catch (err) {
+      step1Error.textContent = err.message || 'Gagal membuat tiket. Coba lagi.';
+      step1Error.classList.remove('d-none');
+    } finally {
+      btnBuatTiket.disabled = false;
+      btnBuatTiket.innerHTML = 'Buat Tiket &amp; Lanjutkan <i class="bi bi-arrow-right ms-1"></i>';
+    }
+  });
+
+  document.getElementById('btnBackStep').addEventListener('click', () => {
+    step2.classList.add('d-none');
+    step1.classList.remove('d-none');
+    stepDot1.classList.add('active'); stepDot1.classList.remove('done');
+    stepDot2.classList.remove('active');
+  });
+
+  const svcEmpty = document.getElementById('svcEmpty');
+  const svcItemsList = document.getElementById('svcItemsList');
+  const svcTotalEl = document.getElementById('svcTotal');
+  const svcCountEl = document.getElementById('svcCount');
+  const svcSubtotalEl = document.getElementById('svcSubtotal');
+  const svcNameInput = document.getElementById('svcName');
+  const svcPriceInput = document.getElementById('svcPrice');
+
+  const partEmpty = document.getElementById('partEmpty');
+  const partItemsList = document.getElementById('partItemsList');
+  const partCountEl = document.getElementById('partCount');
+  const partSubtotalEl = document.getElementById('partSubtotal');
+  const partSelect = document.getElementById('partSelect');
+  const partPriceDisplay = document.getElementById('partPriceDisplay');
+  const partQtyInput = document.getElementById('partQty');
+  const partError = document.getElementById('partError');
+
+  function updatePartPriceDisplay(){
+    const opt = partSelect.options[partSelect.selectedIndex];
+    const price = opt && opt.dataset.price ? parseInt(opt.dataset.price, 10) : 0;
+    partPriceDisplay.value = formatRupiah(price);
+  }
+  partSelect.addEventListener('change', updatePartPriceDisplay);
+
+  function renderGrandTotal(){
+    const svcTotal = svcItems.reduce((sum, item) => sum + item.biaya, 0);
+    const partTotal = partItems.reduce((sum, item) => sum + item.harga_satuan * item.qty, 0);
+    svcSubtotalEl.textContent = formatRupiah(svcTotal);
+    partSubtotalEl.textContent = formatRupiah(partTotal);
+    svcTotalEl.textContent = formatRupiah(svcTotal + partTotal);
+    svcCountEl.textContent = svcItems.length;
+    partCountEl.textContent = partItems.length;
+  }
+
+  function renderSvcList(){
+    svcItemsList.innerHTML = svcItems.map(item => `
+      <div class="cart-row">
+        <div class="flex-grow-1">
+          <div class="ci-name">${item.nama_layanan}</div>
+          <div class="ci-price">${formatRupiah(item.biaya)}</div>
+        </div>
+      </div>
+    `).join('');
+    svcEmpty.style.display = svcItems.length === 0 ? 'block' : 'none';
+    renderGrandTotal();
+  }
+
+  function renderPartList(){
+    partItemsList.innerHTML = partItems.map(item => `
+      <div class="cart-row">
+        <div class="flex-grow-1">
+          <div class="ci-name">${item.nama} <span class="text-muted">× ${item.qty}</span></div>
+          <div class="ci-price">${formatRupiah(item.harga_satuan)} / pcs — subtotal ${formatRupiah(item.harga_satuan * item.qty)}</div>
+        </div>
+      </div>
+    `).join('');
+    partEmpty.style.display = partItems.length === 0 ? 'block' : 'none';
+    renderGrandTotal();
+  }
+
+  document.getElementById('btnAddSvc').addEventListener('click', async () => {
+    if (!currentTiketId) return;
+    const nama_layanan = svcNameInput.value.trim();
+    const biaya = parseInt(svcPriceInput.value, 10);
+    if(!nama_layanan || isNaN(biaya) || biaya < 0) return;
+
+    try {
+      await fetchJson(`/api/tiket-servis/${currentTiketId}/layanan`, {
+        method: 'POST',
+        body: JSON.stringify({ nama_layanan, biaya }),
+      });
+      svcItems.push({ nama_layanan, biaya });
+      svcNameInput.value = '';
+      svcPriceInput.value = '';
+      svcNameInput.focus();
+      renderSvcList();
+      refreshEstimasi();
+    } catch (err) {
+      alert(err.message || 'Gagal menambah layanan.');
+    }
+  });
+
+  document.querySelectorAll('#svcSuggestions .suggestion-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      svcNameInput.value = chip.dataset.name;
+      svcPriceInput.value = chip.dataset.price;
+      svcPriceInput.focus();
+    });
+  });
+
+  document.getElementById('btnAddPart').addEventListener('click', async () => {
+    if (!currentTiketId) return;
+    partError.classList.add('d-none');
+
+    const opt = partSelect.options[partSelect.selectedIndex];
+    if (!opt || !opt.value) return;
+    const sparepart_id = parseInt(opt.value, 10);
+    const nama = opt.textContent;
+    const harga_satuan = parseInt(opt.dataset.price, 10) || 0;
+    const qty = parseInt(partQtyInput.value, 10) || 1;
+    if(qty < 1) return;
+
+    try {
+      await fetchJson(`/api/tiket-servis/${currentTiketId}/sparepart`, {
+        method: 'POST',
+        body: JSON.stringify({ sparepart_id, qty }),
+      });
+
+      const existing = partItems.find(p => p.sparepart_id === sparepart_id);
+      if(existing){
+        existing.qty += qty;
+      } else {
+        partItems.push({ sparepart_id, nama, harga_satuan, qty });
+      }
+      partQtyInput.value = 1;
+      renderPartList();
+      refreshEstimasi();
+    } catch (err) {
+      partError.textContent = err.message || 'Gagal menambah sparepart.';
+      partError.classList.remove('d-none');
+    }
+  });
+
+  const btnFinishTicket = document.getElementById('btnFinishTicket');
+  btnFinishTicket.addEventListener('click', async () => {
+    if(!currentTiketId || (svcItems.length === 0 && partItems.length === 0)) return;
+
+    btnFinishTicket.disabled = true;
+    btnFinishTicket.textContent = 'Memproses…';
+
+    try {
+      // Tidak lagi auto-PATCH status ke 'selesai' - tiket tetap 'menunggu' dan baru berubah status
+      // lewat halaman Antrian Servis saat benar-benar mulai/selesai dikerjakan. Notanya tetap
+      // langsung dibuat di sini supaya pelanggan bisa langsung pegang bukti servis masuk.
+      const { data: invoice } = await fetchJson('/api/invoice/dari-tiket', {
+        method: 'POST',
+        body: JSON.stringify({ tiket_servis_id: currentTiketId }),
+      });
+
+      showInvoice(invoice);
+      resetServiceForm();
+    } catch (err) {
+      alert(err.message || 'Gagal menyimpan tiket.');
+    } finally {
+      btnFinishTicket.disabled = false;
+      btnFinishTicket.innerHTML = 'Selesai &amp; Masuk Antrian';
+    }
+  });
+
+  function showInvoice(invoice){
+    const tanggal = new Date(invoice.tanggal_invoice).toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' });
+    document.getElementById('invoiceBody').innerHTML = `
+      <div class="text-center mb-3">
+        <div class="fw-semibold" style="font-family:'Oswald',sans-serif; text-transform:uppercase;">Gehenk Bike</div>
+        <div class="mono small text-muted">${invoice.nomor_invoice}</div>
+        <div class="small text-muted">${tanggal}</div>
+      </div>
+      <div class="invoice-row"><span class="text-muted">Tiket Servis</span><span>#${document.getElementById('ticketNo').textContent.replace('#','')}</span></div>
+      <div class="invoice-row"><span class="text-muted">Pelanggan</span><span>${document.getElementById('sumNama').textContent}</span></div>
+      <div class="invoice-row"><span class="text-muted">Sepeda</span><span>${document.getElementById('sumJenis').textContent}</span></div>
+      <div class="invoice-row"><span class="text-muted">Mekanik</span><span>${document.getElementById('sumMekanik').textContent}</span></div>
+      <div class="invoice-row"><span class="text-muted">Estimasi Selesai</span><span>${document.getElementById('sumEstimasi').textContent}</span></div>
+      <hr style="border-color:var(--line);">
+      <div class="invoice-row"><span class="text-muted">Biaya jasa</span><span class="mono">${document.getElementById('svcSubtotal').textContent}</span></div>
+      <div class="invoice-row"><span class="text-muted">Biaya sparepart</span><span class="mono">${document.getElementById('partSubtotal').textContent}</span></div>
+      <div class="invoice-total-row"><span>Total</span><span class="mono text-navy">${formatRupiah(invoice.total)}</span></div>
+      <div class="invoice-row mt-2"><span class="text-muted">Metode Pembayaran</span><span class="text-capitalize">${invoice.metode_pembayaran}</span></div>
+      <div class="invoice-row"><span class="text-muted">Status</span><span class="text-capitalize text-sky fw-semibold">${invoice.status_pembayaran}</span></div>
+    `;
+    new bootstrap.Modal(document.getElementById('modalInvoice')).show();
+  }
+
+  function resetServiceForm(){
+    currentTiketId = null;
+    svcItems = [];
+    partItems = [];
+    document.getElementById('inNama').value = '';
+    document.getElementById('inHp').value = '';
+    document.getElementById('inKeluhan').value = '';
+    sembunyikanMatchPelanggan();
+    step2.classList.add('d-none');
+    step1.classList.remove('d-none');
+    stepDot1.classList.add('active'); stepDot1.classList.remove('done');
+    stepDot2.classList.remove('active');
+    document.getElementById('ticketDoneMsg').classList.add('d-none');
+  }
+
+  function showInvoiceFromTransaksi(invoice, items, pelangganLabel){
+    const tanggal = new Date(invoice.tanggal_invoice).toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' });
+    const itemRows = items.map(i => `
+      <div class="invoice-row"><span class="text-muted">${i.nama} <span class="mono">× ${i.qty}</span></span><span class="mono">${formatRupiah(i.price * i.qty)}</span></div>
+    `).join('');
+
+    document.getElementById('invoiceBody').innerHTML = `
+      <div class="text-center mb-3">
+        <div class="fw-semibold" style="font-family:'Oswald',sans-serif; text-transform:uppercase;">Gehenk Bike</div>
+        <div class="mono small text-muted">${invoice.nomor_invoice}</div>
+        <div class="small text-muted">${tanggal}</div>
+      </div>
+      <div class="invoice-row"><span class="text-muted">Pelanggan</span><span>${pelangganLabel}</span></div>
+      <hr style="border-color:var(--line);">
+      ${itemRows}
+      <div class="invoice-total-row"><span>Total</span><span class="mono text-navy">${formatRupiah(invoice.total)}</span></div>
+      <div class="invoice-row mt-2"><span class="text-muted">Metode Pembayaran</span><span class="text-capitalize">${invoice.metode_pembayaran}</span></div>
+      <div class="invoice-row"><span class="text-muted">Status</span><span class="text-capitalize text-sky fw-semibold">${invoice.status_pembayaran}</span></div>
+    `;
+    new bootstrap.Modal(document.getElementById('modalInvoice')).show();
+  }
+
+  document.getElementById('btnPrintInvoice').addEventListener('click', () => window.print());
+
+  /* ---------- Tab Beli Barang: keranjang ---------- */
+  const cart = {}; // key: sparepart_id -> { nama, price, qty, stok }
+  const cartBody = document.getElementById('cartBody');
+  const cartEmpty = document.getElementById('cartEmpty');
+  const cartSubtotal = document.getElementById('cartSubtotal');
+  const cartTotal = document.getElementById('cartTotal');
+  const cartCount = document.getElementById('cartCount');
+  const btnCheckout = document.getElementById('btnCheckout');
+  const checkoutError = document.getElementById('checkoutError');
+  const checkoutDoneMsg = document.getElementById('checkoutDoneMsg');
+  const metodePembayaran = 'tunai'; // satu-satunya metode yang didukung saat ini
+
+  function renderCart(){
+    Array.from(cartBody.querySelectorAll('.cart-row')).forEach(el => el.remove());
+    let subtotal = 0, items = 0;
+    Object.keys(cart).forEach(id => {
+      const item = cart[id];
+      if(item.qty <= 0) return;
+      subtotal += item.qty * item.price;
+      items += item.qty;
+      const row = document.createElement('div');
+      row.className = 'cart-row';
+      row.innerHTML = `
+        <div class="flex-grow-1">
+          <div class="ci-name">${item.nama}</div>
+          <div class="ci-price">${formatRupiah(item.price)}</div>
+        </div>
+        <div class="qty-stepper">
+          <button type="button" data-act="minus" data-id="${id}">−</button>
+          <span>${item.qty}</span>
+          <button type="button" data-act="plus" data-id="${id}">+</button>
+        </div>
+        <button type="button" class="cart-remove" data-act="remove" data-id="${id}"><i class="bi bi-x-lg"></i></button>
+      `;
+      cartBody.appendChild(row);
+    });
+    cartEmpty.style.display = items === 0 ? 'block' : 'none';
+    cartSubtotal.textContent = formatRupiah(subtotal);
+    cartTotal.textContent = formatRupiah(subtotal);
+    cartCount.textContent = items + ' barang';
+    btnCheckout.disabled = items === 0;
+  }
+
+  document.getElementById('productGrid').addEventListener('click', (e) => {
+    const btn = e.target.closest('button.btn-add');
+    if(!btn || btn.disabled) return;
+    const rawId = parseInt(btn.dataset.id, 10);
+    const jenis = btn.dataset.jenis;
+    const id = `${jenis}-${rawId}`;
+    const nama = btn.dataset.name;
+    const price = parseInt(btn.dataset.price, 10);
+    const stok = parseInt(btn.dataset.stok, 10);
+    if(!cart[id]) cart[id] = { id: rawId, jenis_item: jenis, nama, price, qty: 0, stok };
+    if(cart[id].qty >= stok){
+      checkoutError.textContent = `Stok ${nama} hanya tersisa ${stok}.`;
+      checkoutError.classList.remove('d-none');
+      return;
+    }
+    checkoutError.classList.add('d-none');
+    cart[id].qty++;
+    renderCart();
+  });
+
+  cartBody.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-act]');
+    if(!btn) return;
+    const id = btn.dataset.id;
+    if(!cart[id]) return;
+    if(btn.dataset.act === 'plus' && cart[id].qty < cart[id].stok) cart[id].qty++;
+    if(btn.dataset.act === 'minus') cart[id].qty = Math.max(0, cart[id].qty - 1);
+    if(btn.dataset.act === 'remove') cart[id].qty = 0;
+    renderCart();
+  });
+
+  btnCheckout.addEventListener('click', async () => {
+    const items = Object.keys(cart)
+      .filter(id => cart[id].qty > 0)
+      .map(id => ({ jenis_item: cart[id].jenis_item, item_id: cart[id].id, qty: cart[id].qty }));
+    if (!items.length) return;
+
+    checkoutError.classList.add('d-none');
+    checkoutDoneMsg.classList.add('d-none');
+    btnCheckout.disabled = true;
+    btnCheckout.textContent = 'Memproses…';
+
+    const pelangganId = document.getElementById('cartPelanggan').value;
+    const pelangganLabel = pelangganId
+      ? document.getElementById('cartPelanggan').selectedOptions[0].textContent
+      : 'Umum (tanpa pelanggan)';
+    const tanggalTransaksi = document.getElementById('cartTanggal').value || null;
+    const itemsSnapshot = Object.values(cart).filter(i => i.qty > 0); // untuk invoice, sebelum cart dikosongkan
+
+    try {
+      const { data: transaksi } = await fetchJson('/api/transaksi', {
+        method: 'POST',
+        body: JSON.stringify({
+          pelanggan_id: pelangganId || null,
+          metode_pembayaran: metodePembayaran,
+          tanggal: tanggalTransaksi,
+          items,
+        }),
+      });
+
+      Object.keys(cart).forEach(id => delete cart[id]);
+      document.getElementById('cartTanggal').value = new Date().toISOString().slice(0, 10);
+      renderCart();
+      checkoutDoneMsg.classList.remove('d-none');
+
+      const { data: invoice } = await fetchJson('/api/invoice/dari-transaksi', {
+        method: 'POST',
+        body: JSON.stringify({ transaksi_penjualan_id: transaksi.id }),
+      });
+      showInvoiceFromTransaksi(invoice, itemsSnapshot, pelangganLabel);
+
+      // stok berkurang di server; muat ulang katalog & pilihan sparepart supaya sinkron
+      const { data } = await fetchJson('/api/sparepart');
+      sparepartList = data || [];
+      const { data: dataSepeda } = await fetchJson('/api/sepeda');
+      sepedaList = dataSepeda || [];
+      renderPartSelect();
+      renderProductGrid(document.getElementById('productSearch').value);
+    } catch (err) {
+      checkoutError.textContent = err.message || 'Gagal memproses transaksi.';
+      checkoutError.classList.remove('d-none');
+    } finally {
+      btnCheckout.textContent = 'Proses Pembayaran';
+      btnCheckout.disabled = Object.values(cart).every(i => i.qty <= 0);
+    }
+  });
+
+  document.getElementById('cartTanggal').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('cartTanggal').max = new Date().toISOString().slice(0, 10); // tidak boleh pilih tanggal depan
+
+  loadReferenceData();
+</script>
+</body>
+</html>

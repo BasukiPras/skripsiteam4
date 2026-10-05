@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<script src="mock-api.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gehenk Bike — Bengkel Sepeda Terpercaya</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EAF1F9;
+    --panel:#FFFFFF;
+    --panel-light:#DEE9F4;
+    --kraft:#E4EDF7;
+    --ink:#0F2340;
+    --muted:#5C6E88;
+    --yellow:#C9932A;
+    --teal:#2F7A67;
+    --rust:#C24A20;
+    --pink:#E31C79;
+    --line:#CBD9EA;
+  }
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg); color:var(--ink); font-family:'Inter', sans-serif;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  h1,h2,h3,.brand-name{font-family:'Oswald', sans-serif; text-transform:uppercase; letter-spacing:.02em;}
+  .text-yellow{color:var(--yellow) !important;}
+  .text-teal{color:var(--teal) !important;}
+  .text-rust{color:var(--rust) !important;}
+  section{scroll-margin-top:90px;}
+
+  /* navbar */
+  .site-nav{background:var(--ink); border-bottom:1px solid rgba(255,255,255,.08);}
+  .brand-name{font-size:16px; font-weight:600; line-height:1.1; color:var(--kraft);}
+  .brand-sub{font-size:10px; color:rgba(228,237,247,.55); letter-spacing:.12em; text-transform:uppercase;}
+  .site-nav .nav-link{color:var(--kraft); font-weight:500; font-size:14px; padding:.5rem 1rem !important;}
+  .site-nav .nav-link:hover{color:var(--yellow);}
+  .btn-wa{background:var(--teal); color:#fff; border:none; border-radius:24px; font-weight:600; font-size:13.5px; padding:.55rem 1.2rem; white-space:nowrap;}
+  .btn-wa:hover{background:#256456; color:#fff;}
+  .btn-login{border:1px solid rgba(228,237,247,.5); color:var(--kraft); background:transparent; border-radius:24px; font-weight:600; font-size:13.5px; padding:.55rem 1.2rem; white-space:nowrap;}
+  .btn-login:hover{background:var(--kraft); color:var(--ink);}
+
+  /* hero */
+  .hero{background:linear-gradient(160deg, var(--kraft), var(--bg)); padding:5rem 0 4rem; border-bottom:1px solid var(--line);}
+  .hero-eyebrow{font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--yellow); font-weight:700;}
+  .hero h1{font-size:2.6rem; line-height:1.1; margin:.5rem 0 1rem;}
+  .hero p{font-size:15px; color:var(--muted); max-width:480px;}
+  .btn-primary-yellow{background:var(--pink); border:none; color:#fff; font-weight:600; border-radius:8px; padding:.75rem 1.5rem;}
+  .btn-primary-yellow:hover{background:#B0145C; color:#fff;}
+  .btn-outline-dark2{border:1px solid var(--ink); color:var(--ink); font-weight:600; border-radius:8px; padding:.75rem 1.5rem; background:transparent;}
+  .btn-outline-dark2:hover{background:var(--ink); color:var(--kraft);}
+  .hero-logo-img{
+  max-width: 100%;
+  height: auto;
+  max-height: 220px;   
+  display: block;
+  margin: 0 auto;      
+}
+
+  /* section titles */
+  .section-eyebrow{font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--yellow); font-weight:700;}
+  .section-title{font-size:1.8rem; margin:.4rem 0 .6rem;}
+  .section-desc{color:var(--muted); font-size:14.5px; max-width:560px;}
+
+  /* etalase */
+  .etalase-filter{border:1px solid var(--line); border-radius:20px; color:var(--muted); font-weight:600; font-size:13px; padding:.45rem 1.1rem; background:var(--panel); cursor:pointer;}
+  .etalase-filter.active{background:var(--ink); color:var(--kraft); border-color:var(--ink);}
+  .bike-card{background:var(--panel); border:1px solid var(--line); border-radius:14px; overflow:hidden; height:100%; display:flex; flex-direction:column; transition:box-shadow .2s, transform .2s;}
+  .bike-card:hover{box-shadow:0 8px 22px rgba(17,34,62,.10); transform:translateY(-2px);}
+  .bike-display{height:140px; background:linear-gradient(160deg, var(--kraft), var(--panel-light)); display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; border-bottom:1px solid var(--line);}
+  .bike-display i{font-size:52px; color:var(--yellow); opacity:.85;}
+  .bike-condition{position:absolute; top:12px; left:12px; font-size:10.5px; font-weight:700; padding:.3rem .65rem; border-radius:20px; text-transform:uppercase;}
+  .bike-condition.baru{background:var(--teal); color:#fff;}
+  .bike-condition.bekas{background:var(--pink); color:#fff;}
+  .bike-stock-flag{
+    position:absolute; top:12px; right:12px; font-size:10px; font-weight:700; padding:.25rem .55rem;
+    border-radius:20px; background:rgba(194,87,42,.92); color:#fff;
+  }
+  .bike-body{padding:1rem 1.1rem 1.1rem; display:flex; flex-direction:column; gap:.5rem; flex-grow:1;}
+  .bike-name{font-weight:600; font-size:14.5px;}
+  .bike-cat{font-size:11px; color:var(--muted);}
+  .bike-price{font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:16px; color:var(--pink); margin-top:auto;}
+  .btn-tanya{border:1px solid var(--line); border-radius:8px; font-size:12.5px; font-weight:600; padding:.5rem; text-align:center; color:var(--ink); text-decoration:none; display:block;}
+  .btn-tanya:hover{background:var(--kraft); border-color:var(--yellow); color:var(--ink);}
+  .etalase-empty, .etalase-loading{padding:3rem 1rem; text-align:center; color:var(--muted); font-size:13px;}
+
+  /* sparepart & aksesoris (pakai kelas etalase yang sama, tambahan khusus di bawah) */
+  .part-condition.sparepart{background:var(--rust); color:#fff;}
+  .part-condition.aksesoris{background:#5B6FB0; color:#fff;}
+
+  /* cek status */
+  .check-panel{background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:2rem;}
+  .check-panel .form-control{border-color:var(--line); padding:.7rem .9rem;}
+  .check-panel .form-control:focus{box-shadow:none; border-color:var(--yellow);}
+  .btn-cek-status{
+    background:var(--ink); color:var(--kraft); border:none; border-radius:10px; font-weight:700;
+    padding:.9rem 1.4rem; font-size:15px; width:100%; box-shadow:0 4px 0 #06111F, 0 6px 10px rgba(15,35,64,.2);
+    transition:transform .08s, box-shadow .08s;
+  }
+  .btn-cek-status:hover{background:#1B3A63; color:var(--kraft);}
+  .btn-cek-status:active{transform:translateY(3px); box-shadow:0 1px 0 #06111F, 0 2px 4px rgba(15,35,64,.2);}
+  .btn-cek-status:disabled{opacity:.6; box-shadow:none; transform:none;}
+
+  .star-rating{display:flex; gap:6px; font-size:26px;}
+  .star-rating i{color:var(--line); cursor:pointer; transition:color .1s;}
+  .star-rating i.active{color:var(--yellow);}
+
+  .tracker{display:flex; align-items:center; margin:1.5rem 0;}
+  .tracker-step{display:flex; flex-direction:column; align-items:center; gap:.4rem; flex:1; position:relative;}
+  .tracker-step .dot{width:34px; height:34px; border-radius:50%; background:var(--panel-light); border:2px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:15px; color:var(--muted); z-index:1;}
+  .tracker-step .lbl{font-size:11.5px; font-weight:600; color:var(--muted); text-align:center;}
+  .tracker-step.done .dot{background:var(--teal); border-color:var(--teal); color:#fff;}
+  .tracker-step.done .lbl{color:var(--teal);}
+  .tracker-step.current .dot{background:var(--yellow); border-color:var(--yellow); color:#fff;}
+  .tracker-step.current .lbl{color:var(--yellow);}
+  .tracker-line{position:absolute; top:17px; left:-50%; width:100%; height:2px; background:var(--line); z-index:0;}
+  .tracker-step:first-child .tracker-line{display:none;}
+  .tracker-step.done .tracker-line, .tracker-step.current .tracker-line{background:var(--teal);}
+
+  .result-card{background:var(--kraft); border:1px solid var(--line); border-radius:12px; padding:1.25rem;}
+  .result-row{display:flex; justify-content:space-between; padding:.4rem 0; border-bottom:1px solid var(--line); font-size:13.5px;}
+  .result-row:last-child{border-bottom:none;}
+
+  .btn-halaman-tiket{
+    width:34px; height:34px; border-radius:50%; border:1px solid var(--line); background:var(--panel);
+    color:var(--ink); font-weight:600; font-size:13px; display:flex; align-items:center; justify-content:center;
+  }
+  .btn-halaman-tiket:hover{border-color:var(--yellow);}
+  .btn-halaman-tiket.active{background:var(--ink); color:var(--kraft); border-color:var(--ink);}
+
+  /* why us */
+  .why-icon{width:56px; height:56px; border-radius:14px; background:var(--kraft); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:24px; color:var(--yellow); margin-bottom:1rem;}
+
+  /* footer */
+  footer{background:var(--ink); color:var(--kraft); padding:3rem 0 1.5rem;}
+  footer a{color:var(--kraft); text-decoration:none;}
+  footer a:hover{color:var(--yellow);}
+  footer .foot-label{font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#9FB3CC; font-weight:600; margin-bottom:.6rem;}
+  footer hr{border-color:#24406B;}
+</style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg site-nav sticky-top py-3">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="#hero">
+      <div class="brand-mark">
+      <img src="/storage/Bike_Only.png" alt="Logo" width="100" height="50" class="d-inline-block align-text-top">
+      </div>
+      <div>
+      </div>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+      <i class="bi bi-list fs-3"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav mx-auto">
+        <li class="nav-item"><a class="nav-link" href="#hero">Beranda</a></li>
+        <li class="nav-item"><a class="nav-link" href="#etalase">Etalase Sepeda</a></li>
+        <li class="nav-item"><a class="nav-link" href="#sparepart">Sparepart &amp; Aksesoris</a></li>
+        <li class="nav-item"><a class="nav-link" href="#cek-status">Cek Status Servis</a></li>
+        <li class="nav-item"><a class="nav-link" href="#feedback">Kirim Masukan</a></li>
+        <li class="nav-item"><a class="nav-link" href="#lokasi">Lokasi &amp; Jam</a></li>
+      </ul>
+      <div class="d-flex align-items-center gap-2">
+        <a href="admin/login.html" class="btn-login text-decoration-none"><i class="bi bi-box-arrow-in-right me-1"></i>Login</a>
+        <a href="https://wa.me/6281320563061" class="btn-wa text-decoration-none"><i class="bi bi-whatsapp me-1"></i>Hubungi Kami</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section id="hero" class="hero">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <div class="hero-eyebrow">Bengkel &amp; Toko Sepeda</div>
+        <h1>Servis Jujur, Sepeda Selalu Siap Digowes</h1>
+        <p>Gehenk Bike melayani servis segala jenis sepeda, jual beli sepeda baru &amp; bekas berkualitas, serta sparepart & aksesoris.</p>
+        <div class="d-flex flex-wrap gap-3 mt-4">
+          <a href="#etalase" class="btn-primary-yellow text-decoration-none"><i class="bi bi-bicycle me-1"></i>Lihat Etalase Sepeda</a>
+          <a href="#cek-status" class="btn-outline-dark2 text-decoration-none"><i class="bi bi-search me-1"></i>Cek Status Servis</a>
+        </div>
+      </div>
+      <div class="col-lg-6">
+  <img src="/storage/Logo_Potrait.png" alt="Logo" class="hero-logo-img">
+</div>
+    </div>
+  </div>
+</section>
+
+<!-- Kenapa pilih kami -->
+<section class="py-5">
+  <div class="container">
+    <div class="row g-4 text-center">
+      <div class="col-md-4">
+        <div class="why-icon mx-auto"><i class="bi bi-tools"></i></div>
+        <h3 class="fs-6">Mekanik Berpengalaman</h3>
+        <p class="small text-muted mb-0">Mekanik dengan pengalaman lebih dari 10 tahun menangani berbagai jenis sepeda.</p>
+      </div>
+      <div class="col-md-4">
+        <div class="why-icon mx-auto"><i class="bi bi-patch-check"></i></div>
+        <h3 class="fs-6">Sparepart & Aksesoris Beragam</h3>
+        <p class="small text-muted mb-0">Sparepart & aksesoris lengkap.</p>
+      </div>
+      <div class="col-md-4">
+        <div class="why-icon mx-auto"><i class="bi bi-shield-check"></i></div>
+        <h3 class="fs-6">Garansi Servis</h3>
+        <p class="small text-muted mb-0">Setiap pengerjaan servis mendapat garansi, jadi kamu bisa kembali gratis bila ada kendala.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Etalase Sepeda -->
+<section id="etalase" class="py-5" style="background:var(--panel-light);">
+  <div class="container">
+    <div class="section-eyebrow">Etalase</div>
+    <h2 class="section-title">Sepeda Baru &amp; Bekas</h2>
+    <p class="section-desc mb-4">Pilihan sepeda siap pakai, kondisi terawat.</p>
+
+    <div class="d-flex flex-wrap gap-2 mb-4" id="etalaseFilters">
+      <button class="etalase-filter active" data-cond="semua">Semua</button>
+      <button class="etalase-filter" data-cond="baru">Baru</button>
+      <button class="etalase-filter" data-cond="bekas">Bekas</button>
+    </div>
+
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3" id="etalaseGrid"></div>
+    <div class="d-flex justify-content-center gap-2 mt-4" id="etalasePaginasi"></div>
+    <div class="etalase-loading" id="etalaseLoading"><i class="bi bi-arrow-repeat fs-3 d-block mb-2"></i>Memuat etalase sepeda...</div>
+    <div class="etalase-empty d-none" id="etalaseEmpty"><i class="bi bi-bicycle fs-3 d-block mb-2"></i>Belum ada sepeda untuk kategori ini.</div>
+  </div>
+</section>
+
+<!-- Sparepart & Aksesoris -->
+<section id="sparepart" class="py-5">
+  <div class="container">
+    <div class="section-eyebrow">Etalase</div>
+    <h2 class="section-title">Sparepart &amp; Aksesoris</h2>
+    <p class="section-desc mb-4">Sparepart dan aksesoris pelengkap sepeda.</p>
+
+    <div class="d-flex flex-wrap gap-2 mb-4" id="sparepartFilters">
+      <button class="etalase-filter active" data-kategori="semua">Semua</button>
+      <button class="etalase-filter" data-kategori="sparepart">Sparepart</button>
+      <button class="etalase-filter" data-kategori="aksesoris">Aksesoris</button>
+    </div>
+
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3" id="sparepartGrid"></div>
+    <div class="d-flex justify-content-center gap-2 mt-4" id="sparepartPaginasi"></div>
+    <div class="etalase-loading" id="sparepartLoading"><i class="bi bi-arrow-repeat fs-3 d-block mb-2"></i>Memuat sparepart &amp; aksesoris...</div>
+    <div class="etalase-empty d-none" id="sparepartEmpty"><i class="bi bi-gear fs-3 d-block mb-2"></i>Belum ada produk untuk kategori ini.</div>
+  </div>
+</section>
+
+<!-- Cek Status Servis -->
+<section id="cek-status" class="py-5" style="background:var(--panel-light);">
+  <div class="container">
+    <div class="section-eyebrow">Layanan Pelanggan</div>
+    <h2 class="section-title">Cek Status Servis Sepedamu</h2>
+    <p class="section-desc mb-4">Masukkan nomor WhatsApp yang kamu daftarkan saat servis untuk melihat progres servismu.</p>
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="check-panel">
+          <form id="formCekTiket">
+            <label class="form-label small fw-medium">Nomor WhatsApp</label>
+            <input type="text" class="form-control mb-3" id="cekHp" placeholder="cth. 0813-6677-8899" inputmode="numeric" required>
+            <button type="submit" class="btn-cek-status d-block w-100" id="btnCekTiket">
+              <i class="bi bi-search me-2"></i><span id="btnCekTiketLabel">Cek Status Servis</span>
+            </button>
+          </form>
+          <div class="small text-rust mt-2 d-none" id="cekError">Tiket tidak ditemukan untuk nomor WhatsApp ini. Periksa kembali nomornya.</div>
+
+          <div id="cekResultWrap" class="d-none mt-4 d-flex flex-column gap-4"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Kirim Masukan -->
+<section id="feedback" class="py-5" style="background:var(--panel-light);">
+  <div class="container">
+    <div class="section-eyebrow">Kami Mendengarkan</div>
+    <h2 class="section-title">Kirim Masukan</h2>
+    <p class="section-desc mb-4">Punya saran, keluhan, atau kesan soal pelayanan kami? Ceritakan di sini masukanmu langsung kami baca.</p>
+
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="check-panel">
+          <form id="formFeedback">
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label small fw-medium">Nama</label>
+                <input type="text" class="form-control" id="fbNama" placeholder="Nama kamu" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-medium">Nomor WhatsApp (opsional)</label>
+                <input type="text" class="form-control" id="fbHp" placeholder="cth. 0813-6677-8899" inputmode="numeric">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-medium d-block">Penilaian</label>
+              <div class="star-rating" id="fbStars">
+                <i class="bi bi-star-fill" data-star="1"></i>
+                <i class="bi bi-star-fill" data-star="2"></i>
+                <i class="bi bi-star-fill" data-star="3"></i>
+                <i class="bi bi-star-fill" data-star="4"></i>
+                <i class="bi bi-star-fill" data-star="5"></i>
+              </div>
+              <input type="hidden" id="fbRating" value="">
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-medium">Masukan Kamu</label>
+              <textarea class="form-control" id="fbPesan" rows="3" placeholder="Tulis masukanmu di sini..." required></textarea>
+            </div>
+            <button type="submit" class="btn-cek-status d-block w-100" id="btnKirimFeedback">
+              <i class="bi bi-send me-2"></i><span id="btnKirimFeedbackLabel">Kirim Masukan</span>
+            </button>
+          </form>
+          <div class="small text-rust mt-2 d-none" id="fbError">Gagal mengirim masukan. Coba lagi sebentar lagi.</div>
+          <div class="small text-teal mt-2 d-none" id="fbSuccess"><i class="bi bi-check-circle-fill me-1"></i>Terima kasih! Masukanmu sudah kami terima.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Lokasi & Jam -->
+<section id="lokasi" class="py-5">
+  <div class="container">
+    <div class="row g-4 align-items-center">
+      <div class="col-lg-6">
+        <div class="section-eyebrow">Kunjungi Kami</div>
+        <h2 class="section-title">Lokasi &amp; Jam Operasional</h2>
+        <div class="d-flex gap-3 mb-3">
+          <i class="bi bi-geo-alt-fill text-yellow fs-5"></i>
+          <div>
+            <div class="fw-semibold small">Alamat</div>
+            <div class="text-muted small">Jl. Terusan Buah Batu No.63, RT.05/RW.01, Cipagalo,</br> Kec. Bojongsoang, Kabupaten Bandung, Jawa Barat 40287</div>
+          </div>
+        </div>
+        <div class="d-flex gap-3 mb-3">
+          <i class="bi bi-clock-fill text-yellow fs-5"></i>
+          <div>
+            <div class="fw-semibold small">Jam Buka</div>
+            <div class="text-muted small">Setiap hari, 08.00 – 22.00 WIB</div>
+          </div>
+        </div>
+        <div class="d-flex gap-3 mb-4">
+          <i class="bi bi-telephone-fill text-yellow fs-5"></i>
+          <div>
+            <div class="fw-semibold small">Telepon / WhatsApp</div>
+            <div class="text-muted small">0813-2056-3061</div>
+          </div>
+        </div>
+        <a href="https://wa.me/6281320563061" class="btn-wa text-decoration-none"><i class="bi bi-whatsapp me-1"></i>Chat via WhatsApp</a>
+      </div>
+      <div class="col-lg-6">
+  <div style="background:var(--panel); border:1px solid var(--line); border-radius:14px; overflow:hidden; height:280px;">
+    <iframe
+      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d277.8329766679356!2d107.63656865026378!3d-6.969555006847666!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e68e900545515f9%3A0x82575172c0ad9d13!2sGehenk%20bike%20II%20by%20CECEP!5e0!3m2!1sid!2sid!4v1790063154876!5m2!1sid!2sid"
+      width="100%"
+      height="100%"
+      style="border:0;"
+      allowfullscreen=""
+      loading="lazy"
+      referrerpolicy="strict-origin-when-cross-origin">
+    </iframe>
+  </div>
+</div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <div class="brand-mark" style="border-color:var(--yellow);"></div>
+          <div class="brand-name"><img src="/storage/Logo_Potrait.png" width="200" height="100" alt="Logo" class="hero-logo-img"></div>
+        </div>
+        <p class="small" style="color:#9FB3CC;">Bengkel dan toko sepeda terpercaya servis jujur, sparepart &amp; aksesoris berkualitas, sepeda baru &amp; bekas berkualitas.</p>
+      </div>
+      <div class="col-lg-4">
+        <div class="foot-label">Navigasi</div>
+        <div class="d-flex flex-column gap-1 small">
+          <a href="#hero">Beranda</a>
+          <a href="#etalase">Etalase Sepeda</a>
+          <a href="#sparepart">Sparepart &amp; Aksesoris</a>
+          <a href="#cek-status">Cek Status Servis</a>
+          <a href="#lokasi">Lokasi &amp; Jam</a>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="foot-label">Kontak</div>
+            <div class="small" style="color:#9FB3CC;">0813-2056-3061</div>
+        <div class="small" style="color:#9FB3CC;">
+          Jl. Terusan Buah Batu No.63, RT.05/RW.01, Cipagalo,</br> Kec. Bojongsoang, Kabupaten Bandung, Jawa Barat 40287
+        </div>
+      </div>
+    </div>
+    <hr class="my-4">
+    <div class="small text-center" style="color:#9FB3CC;">© 2026 Gehenk Bike by Cecep. Semua hak dilindungi.</div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Base URL API — kosongkan (pakai path relatif) kalau file ini nanti disajikan
+  // dari domain/server Laravel yang sama. Ganti kalau backend ada di domain terpisah,
+  // cth: const API_BASE = 'https://api.gehenkbike.id';
+  const API_BASE = '';
+
+  function formatRupiah(n){ return 'Rp ' + Number(n).toLocaleString('id-ID'); }
+  function onlyDigits(s){ return (s || '').replace(/\D/g, ''); }
+
+  /* ==================== Etalase Sepeda — dari API ==================== */
+  const etalaseGrid = document.getElementById('etalaseGrid');
+  const etalaseLoading = document.getElementById('etalaseLoading');
+  const etalaseEmpty = document.getElementById('etalaseEmpty');
+  const etalaseFilters = document.querySelectorAll('#etalaseFilters .etalase-filter');
+  let activeCond = 'semua';
+
+  const ETALASE_PER_HALAMAN = 8;
+  let etalaseItems = [], etalaseHalaman = 1;
+  const etalasePaginasi = document.getElementById('etalasePaginasi');
+
+  function tampilEtalase(){
+    renderEtalase(etalaseItems.slice((etalaseHalaman - 1) * ETALASE_PER_HALAMAN, etalaseHalaman * ETALASE_PER_HALAMAN));
+    const total = Math.ceil(etalaseItems.length / ETALASE_PER_HALAMAN);
+    etalasePaginasi.innerHTML = total > 1
+      ? Array.from({ length: total }, (_, i) => `<button type="button" class="btn-halaman-tiket ${i + 1 === etalaseHalaman ? 'active' : ''}" data-page="${i + 1}">${i + 1}</button>`).join('')
+      : '';
+  }
+  etalasePaginasi.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-page]');
+    if (!b) return;
+    etalaseHalaman = Number(b.dataset.page);
+    tampilEtalase();
+    etalaseGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  async function loadEtalase(){
+    etalaseLoading.classList.remove('d-none');
+    etalaseEmpty.classList.add('d-none');
+    etalaseGrid.innerHTML = '';
+
+    try {
+      const params = new URLSearchParams();
+      if (activeCond !== 'semua') params.set('kondisi', activeCond);
+
+      const res = await fetch(`${API_BASE}/api/publik/sepeda?${params}`, {
+        headers: { 'Accept': 'application/json' },
+      });
+      if (!res.ok) throw new Error('Gagal memuat data');
+
+      const { data } = await res.json();
+      etalaseItems = data || [];
+      etalaseHalaman = 1;
+      tampilEtalase();
+    } catch (err) {
+      etalaseGrid.innerHTML = `<div class="col-12 etalase-empty"><i class="bi bi-wifi-off fs-3 d-block mb-2"></i>Gagal memuat etalase, coba muat ulang halaman.</div>`;
+    } finally {
+      etalaseLoading.classList.add('d-none');
+    }
+  }
+
+  function renderEtalase(bikes){
+    etalaseGrid.innerHTML = '';
+
+    if (!bikes || bikes.length === 0) {
+      etalaseEmpty.classList.remove('d-none');
+      return;
+    }
+    etalaseEmpty.classList.add('d-none');
+
+    bikes.forEach(b => {
+      const kondisiLabel = b.kondisi === 'baru' ? 'Baru' : 'Bekas';
+      const namaLengkap = `${b.merek} ${b.nama}`;
+      const waText = encodeURIComponent(`Halo Gehenk Bike, saya mau tanya soal ${namaLengkap} (${kondisiLabel}) yang harganya ${formatRupiah(b.harga)}.`);
+
+      const col = document.createElement('div');
+      col.className = 'col';
+      col.innerHTML = `
+        <div class="bike-card">
+          <div class="bike-display">
+            <span class="bike-condition ${b.kondisi}">${kondisiLabel}</span>
+            ${b.stok === 0 ? '<span class="bike-stock-flag">Stok Habis</span>' : ''}
+            ${b.foto_url ? `<img src="${b.foto_url}" alt="${namaLengkap}" style="width:100%; height:100%; object-fit:cover;">` : '<i class="bi bi-bicycle"></i>'}
+          </div>
+          <div class="bike-body">
+            <div class="bike-name">${namaLengkap}</div>
+            <div class="bike-cat">${b.kategori}</div>
+            <div class="bike-price">${formatRupiah(b.harga)}</div>
+            <a href="https://wa.me/6281320563061?text=${waText}" class="btn-tanya"><i class="bi bi-whatsapp me-1"></i>Tanya via WhatsApp</a>
+          </div>
+        </div>
+      `;
+      etalaseGrid.appendChild(col);
+    });
+  }
+
+  etalaseFilters.forEach(btn => {
+    btn.addEventListener('click', () => {
+      etalaseFilters.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeCond = btn.dataset.cond;
+      loadEtalase();
+    });
+  });
+  loadEtalase();
+
+  /* ==================== Sparepart & Aksesoris — dari API ==================== */
+  const sparepartGrid = document.getElementById('sparepartGrid');
+  const sparepartLoading = document.getElementById('sparepartLoading');
+  const sparepartEmpty = document.getElementById('sparepartEmpty');
+  const sparepartFilters = document.querySelectorAll('#sparepartFilters .etalase-filter');
+  let activeKategoriSP = 'semua';
+
+  const spareIconByKategori = { sparepart: 'bi-gear-wide-connected', aksesoris: 'bi-bag' };
+  const SP_PER_HALAMAN = 8;
+  let spItems = [], spHalaman = 1;
+  const spPaginasi = document.getElementById('sparepartPaginasi');
+
+  function tampilSparepart(){
+    renderSparepart(spItems.slice((spHalaman - 1) * SP_PER_HALAMAN, spHalaman * SP_PER_HALAMAN));
+    const total = Math.ceil(spItems.length / SP_PER_HALAMAN);
+    spPaginasi.innerHTML = total > 1
+      ? Array.from({ length: total }, (_, i) => `<button type="button" class="btn-halaman-tiket ${i + 1 === spHalaman ? 'active' : ''}" data-page="${i + 1}">${i + 1}</button>`).join('')
+      : '';
+  }
+  spPaginasi.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-page]');
+    if (!b) return;
+    spHalaman = Number(b.dataset.page);
+    tampilSparepart();
+    sparepartGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  async function loadSparepart(){
+    sparepartLoading.classList.remove('d-none');
+    sparepartEmpty.classList.add('d-none');
+    sparepartGrid.innerHTML = '';
+
+    try {
+      const params = new URLSearchParams();
+      if (activeKategoriSP !== 'semua') params.set('kategori', activeKategoriSP);
+
+      const res = await fetch(`${API_BASE}/api/publik/sparepart?${params}`, {
+        headers: { 'Accept': 'application/json' },
+      });
+      if (!res.ok) throw new Error('Gagal memuat data');
+
+      const { data } = await res.json();
+      spItems = data || [];
+      spHalaman = 1;
+      tampilSparepart();
+    } catch (err) {
+      sparepartGrid.innerHTML = `<div class="col-12 etalase-empty"><i class="bi bi-wifi-off fs-3 d-block mb-2"></i>Gagal memuat sparepart &amp; aksesoris, coba muat ulang halaman.</div>`;
+    } finally {
+      sparepartLoading.classList.add('d-none');
+    }
+  }
+
+  function renderSparepart(items){
+    sparepartGrid.innerHTML = '';
+
+    if (!items || items.length === 0) {
+      sparepartEmpty.classList.remove('d-none');
+      return;
+    }
+    sparepartEmpty.classList.add('d-none');
+
+    items.forEach(p => {
+      const kategoriLabel = p.kategori === 'sparepart' ? 'Sparepart' : 'Aksesoris';
+      const icon = spareIconByKategori[p.kategori] || 'bi-box-seam';
+      const namaLengkap = p.merek ? `${p.merek} ${p.nama}` : p.nama;
+      const waText = encodeURIComponent(`Halo Gehenk Bike, saya mau tanya soal ${namaLengkap} (${kategoriLabel}) yang harganya ${formatRupiah(p.harga)}.`);
+
+      const col = document.createElement('div');
+      col.className = 'col';
+      col.innerHTML = `
+        <div class="bike-card">
+          <div class="bike-display">
+            <span class="bike-condition part-condition ${p.kategori}">${kategoriLabel}</span>
+            ${p.stok === 0 ? '<span class="bike-stock-flag">Stok Habis</span>' : ''}
+            <i class="bi ${icon}"></i>
+          </div>
+          <div class="bike-body">
+            <div class="bike-name">${namaLengkap}</div>
+            <div class="bike-cat">${p.sub_kategori || kategoriLabel}</div>
+            <div class="bike-price">${formatRupiah(p.harga)}</div>
+            <a href="https://wa.me/6281320563061?text=${waText}" class="btn-tanya"><i class="bi bi-whatsapp me-1"></i>Tanya via WhatsApp</a>
+          </div>
+        </div>
+      `;
+      sparepartGrid.appendChild(col);
+    });
+  }
+
+  sparepartFilters.forEach(btn => {
+    btn.addEventListener('click', () => {
+      sparepartFilters.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeKategoriSP = btn.dataset.kategori;
+      loadSparepart();
+    });
+  });
+  loadSparepart();
+
+  /* ==================== Cek Status Servis — dari API ==================== */
+  const statusInfo = {
+    menunggu: {label:'Menunggu Antrian', badge:'background:var(--rust); color:#fff;', step:0},
+    dikerjakan: {label:'Sedang Dikerjakan', badge:'background:var(--yellow); color:#fff;', step:1},
+    selesai: {label:'Selesai — Siap Diambil', badge:'background:var(--teal); color:#fff;', step:2},
+    sudah_diambil: {label:'Sudah Diambil', badge:'background:var(--muted); color:#fff;', step:2},
+  };
+
+  function renderTracker(step){
+    const steps = [
+      {icon:'bi-clipboard-check', label:'Diterima'},
+      {icon:'bi-wrench-adjustable', label:'Dikerjakan'},
+      {icon:'bi-check-circle', label:'Selesai'},
+    ];
+    return `<div class="tracker">${steps.map((s, i) => {
+      let cls = '';
+      if(i < step) cls = 'done';
+      else if(i === step) cls = 'current';
+      return `<div class="tracker-step ${cls}"><div class="tracker-line"></div><div class="dot"><i class="bi ${s.icon}"></i></div><div class="lbl">${s.label}</div></div>`;
+    }).join('')}</div>`;
+  }
+
+  function renderTicketCard(t){
+    const info = statusInfo[t.status] || statusInfo.menunggu;
+    const estimasiRow = t.estimasi
+      ? `<div class="result-row"><span class="text-muted"><i class=""></i>Perkiraan Selesai</span><span class="fw-medium">${t.estimasi.estimasi_text}</span></div>`
+      : '';
+    return `
+      <div>
+        ${renderTracker(info.step)}
+        <div class="result-card">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="fw-semibold">#${t.nomor_tiket}</div>
+            <span class="badge rounded-pill" style="${info.badge}">${info.label}</span>
+          </div>
+          <div class="result-row"><span class="text-muted">Sepeda</span><span class="fw-medium">${t.jenis_sepeda}</span></div>
+          <div class="result-row"><span class="text-muted">Keluhan</span><span class="fw-medium">${t.keluhan || '—'}</span></div>
+          <div class="result-row"><span class="text-muted">Mekanik</span><span class="fw-medium">${t.mekanik || 'Belum ditugaskan'}</span></div>
+          <div class="result-row"><span class="text-muted">Total Biaya</span><span class="fw-medium mono">${formatRupiah(t.total_biaya)}</span></div>
+          ${estimasiRow}
+        </div>
+      </div>
+    `;
+  }
+
+  const formCekTiket = document.getElementById('formCekTiket');
+  const btnCekTiket = document.getElementById('btnCekTiket');
+  const btnCekTiketLabel = document.getElementById('btnCekTiketLabel');
+  const cekError = document.getElementById('cekError');
+  const cekResultWrap = document.getElementById('cekResultWrap');
+
+  const TIKET_PER_HALAMAN = 3;
+  let semuaTiketHasil = [];
+  let halamanAktif = 1;
+
+  function renderPaginasi(totalHalaman){
+    if (totalHalaman <= 1) return '';
+    let btns = '';
+    for (let i = 1; i <= totalHalaman; i++){
+      btns += `<button type="button" class="btn-halaman-tiket ${i === halamanAktif ? 'active' : ''}" data-page="${i}">${i}</button>`;
+    }
+    return `<div class="d-flex justify-content-center gap-2 mt-1">${btns}</div>`;
+  }
+
+  function renderHalamanTiket(){
+    const totalHalaman = Math.ceil(semuaTiketHasil.length / TIKET_PER_HALAMAN);
+    const awal = (halamanAktif - 1) * TIKET_PER_HALAMAN;
+    const tiketHalamanIni = semuaTiketHasil.slice(awal, awal + TIKET_PER_HALAMAN);
+
+    cekResultWrap.innerHTML = tiketHalamanIni.map(renderTicketCard).join('') + renderPaginasi(totalHalaman);
+
+    cekResultWrap.querySelectorAll('.btn-halaman-tiket').forEach(btn => {
+      btn.addEventListener('click', () => {
+        halamanAktif = Number(btn.dataset.page);
+        renderHalamanTiket();
+        cekResultWrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+    });
+  }
+
+  formCekTiket.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const noHp = onlyDigits(document.getElementById('cekHp').value);
+
+    cekError.classList.add('d-none');
+    cekResultWrap.classList.add('d-none');
+    cekResultWrap.innerHTML = '';
+
+    if (!noHp) return;
+
+    btnCekTiket.disabled = true;
+    btnCekTiketLabel.textContent = 'Mencari...';
+
+    try {
+      const res = await fetch(`${API_BASE}/api/publik/cek-tiket?no_hp=${noHp}`, {
+        headers: { 'Accept': 'application/json' },
+      });
+
+      if (res.status === 429) {
+        cekError.textContent = 'Terlalu banyak percobaan, coba lagi sebentar lagi.';
+        cekError.classList.remove('d-none');
+        return;
+      }
+      if (!res.ok) throw new Error('Gagal memuat data');
+
+      const { data } = await res.json();
+
+      if (!data || data.length === 0) {
+        cekError.textContent = 'Tiket tidak ditemukan untuk nomor WhatsApp ini. Periksa kembali nomornya.';
+        cekError.classList.remove('d-none');
+        return;
+      }
+
+      semuaTiketHasil = data;
+      halamanAktif = 1;
+      renderHalamanTiket();
+      cekResultWrap.classList.remove('d-none');
+    } catch (err) {
+      cekError.textContent = 'Gagal menghubungi server, coba lagi.';
+      cekError.classList.remove('d-none');
+    } finally {
+      btnCekTiket.disabled = false;
+      btnCekTiketLabel.textContent = 'Cek Status Servis';
+    }
+  });
+
+  /* ---------- Form Kirim Masukan ---------- */
+  const formFeedback = document.getElementById('formFeedback');
+  const fbStars = document.querySelectorAll('#fbStars i');
+  const fbRatingInput = document.getElementById('fbRating');
+  const btnKirimFeedback = document.getElementById('btnKirimFeedback');
+  const btnKirimFeedbackLabel = document.getElementById('btnKirimFeedbackLabel');
+  const fbError = document.getElementById('fbError');
+  const fbSuccess = document.getElementById('fbSuccess');
+
+  function paintStars(value){
+    fbStars.forEach(star => star.classList.toggle('active', Number(star.dataset.star) <= value));
+  }
+  fbStars.forEach(star => {
+    star.addEventListener('click', () => {
+      const val = Number(star.dataset.star);
+      fbRatingInput.value = fbRatingInput.value === String(val) ? '' : val; // klik lagi bintang yang sama -> batalkan
+      paintStars(Number(fbRatingInput.value) || 0);
+    });
+  });
+
+  formFeedback.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    fbError.classList.add('d-none');
+    fbSuccess.classList.add('d-none');
+
+    const nama = document.getElementById('fbNama').value.trim();
+    const pesan = document.getElementById('fbPesan').value.trim();
+    if(!nama || !pesan) return;
+
+    btnKirimFeedback.disabled = true;
+    btnKirimFeedbackLabel.textContent = 'Mengirim...';
+
+    try {
+      const res = await fetch(`${API_BASE}/api/publik/feedback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          nama,
+          no_hp: document.getElementById('fbHp').value.trim() || null,
+          pesan,
+          rating: fbRatingInput.value ? Number(fbRatingInput.value) : null,
+        }),
+      });
+      if (!res.ok) throw new Error();
+
+      formFeedback.reset();
+      fbRatingInput.value = '';
+      paintStars(0);
+      fbSuccess.classList.remove('d-none');
+    } catch (err) {
+      fbError.classList.remove('d-none');
+    } finally {
+      btnKirimFeedback.disabled = false;
+      btnKirimFeedbackLabel.textContent = 'Kirim Masukan';
+    }
+  });
+</script>
+</body>
+</html>
